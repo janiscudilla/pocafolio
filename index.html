@@ -979,12 +979,12 @@ function ChipMultiSelect({ label, options, selected, onToggle, initialCount = 12
         key: opt,
         type: "button",
         onClick: () => onToggle(opt),
-        className: "px-2.5 py-1 rounded-full text-xs font-medium",
-        style: { background: active ? theme.accent : theme.surfaceAlt, color: active ? theme.bg : theme.text, border: `1px solid ${theme.border}` }
+        className: "px-2 py-0.5 rounded text-[11px] font-medium",
+        style: { background: active ? theme.accent : "transparent", color: active ? theme.bg : theme.text, border: `1px solid ${active ? theme.accent : theme.border}` }
       },
       opt
     );
-  }), hiddenCount > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setExpanded(true), className: "px-2.5 py-1 rounded-full text-xs font-medium", style: { color: theme.accent } }, "+", hiddenCount, " more")));
+  }), hiddenCount > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setExpanded(true), className: "px-2 py-0.5 rounded text-[11px] font-medium", style: { color: theme.accent } }, "+", hiddenCount, " more")));
 }
 function PhotocardTracker({ isOwner = true } = {}) {
   const [cards, setCards] = useState([]);
@@ -2243,6 +2243,11 @@ function PhotocardTracker({ isOwner = true } = {}) {
     ), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5" }, card.album && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] truncate", style: { color: theme.muted } }, card.album), (card.source || card.category) && /* @__PURE__ */ React.createElement("div", { className: "flex items-end justify-between gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs truncate min-w-0" }, card.source), card.category && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] italic shrink-0", style: { color: theme.muted } }, card.category)), toTags(card.versionDetail).length > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-xs font-semibold truncate" }, toTags(card.versionDetail).join(" \xB7 "))), search && searchField === "all" && searchMatchLabel(card, search) && /* @__PURE__ */ React.createElement("p", { className: "text-[9px] font-bold uppercase tracking-wide mt-1", style: { color: theme.accent } }, searchMatchLabel(card, search)));
   }
   const gridColsStyle = { gridTemplateColumns: `repeat(auto-fill, minmax(${gridDensity === "compact" ? 110 : gridDensity === "gallery" ? 210 : 150}px, 1fr))` };
+  const chip = (active) => ({
+    background: active ? theme.accent : "transparent",
+    color: active ? theme.bg : theme.text,
+    border: `1px solid ${active ? theme.accent : theme.border}`
+  });
   return /* @__PURE__ */ React.createElement("div", { style: { background: theme.bg, color: theme.text, minHeight: "100%", fontFamily: "'Inter', system-ui, sans-serif" }, className: "w-full min-h-screen" }, /* @__PURE__ */ React.createElement("style", null, `
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap');
         .pc-font-display { font-family: 'Instrument Serif', serif; }
@@ -2253,13 +2258,13 @@ function PhotocardTracker({ isOwner = true } = {}) {
         input, select, textarea { background: ${theme.surfaceAlt}; border: 1px solid ${theme.border}; color: ${theme.text}; }
         input::placeholder, textarea::placeholder { color: ${theme.muted}; }
         input:focus, select:focus, textarea:focus { outline: 2px solid ${theme.accent}; outline-offset: 1px; }
-      `), /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("img", { src: LOGO_DATA_URI, alt: "", className: "w-9 h-9 sm:w-10 sm:h-10 rounded-xl shrink-0" }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { className: "pc-font-display text-xl sm:text-2xl leading-none" }, "Pocafolio"), /* @__PURE__ */ React.createElement("p", { className: "text-xs italic mt-0.5", style: { color: theme.muted } }, "janis' photocard tracker because she can't stop buying ATEEZ pcs"))), isOwner && view === "main" && /* @__PURE__ */ React.createElement("button", { onClick: () => setManageOpen(true), title: "Manage values", className: "w-8 h-8 flex items-center justify-center rounded-full shrink-0", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Settings, { size: 13 }))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-5 mb-5 flex-wrap" }, /* @__PURE__ */ React.createElement("nav", { className: "flex items-center gap-4 shrink-0" }, /* @__PURE__ */ React.createElement(
+      `), /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-end justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2.5" }, /* @__PURE__ */ React.createElement("img", { src: LOGO_DATA_URI, alt: "", className: "w-8 h-8 rounded-lg shrink-0" }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { className: "pc-font-display text-lg leading-none" }, "Pocafolio"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] italic mt-0.5", style: { color: theme.muted } }, "janis' photocard tracker because she can't stop buying ATEEZ pcs"))), isOwner && view === "main" && /* @__PURE__ */ React.createElement("button", { onClick: () => setManageOpen(true), title: "Manage values", className: "w-7 h-7 flex items-center justify-center rounded shrink-0", style: { background: "transparent", border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Settings, { size: 12 }))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-5 mb-4 pb-3 flex-wrap", style: { borderBottom: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("nav", { className: "flex items-center gap-4 shrink-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: goHome,
-      className: "pc-label text-xs font-semibold pb-1",
-      style: { color: view === "main" ? theme.text : theme.muted, borderBottom: view === "main" ? `2px solid ${theme.text}` : "2px solid transparent", background: "transparent", border: "none", borderBottomWidth: 2, borderBottomStyle: "solid", cursor: "pointer" }
+      className: "pc-label text-[11px] font-semibold",
+      style: { color: view === "main" ? theme.text : theme.muted, background: "transparent", border: "none", borderBottom: view === "main" ? `1.5px solid ${theme.text}` : "1.5px solid transparent", paddingBottom: 3, cursor: "pointer" }
     },
     "Binder"
   ), /* @__PURE__ */ React.createElement(
@@ -2267,11 +2272,11 @@ function PhotocardTracker({ isOwner = true } = {}) {
     {
       type: "button",
       onClick: () => setView("stats"),
-      className: "pc-label text-xs font-semibold pb-1",
-      style: { color: view === "stats" ? theme.text : theme.muted, borderBottom: view === "stats" ? `2px solid ${theme.text}` : "2px solid transparent", background: "transparent", border: "none", borderBottomWidth: 2, borderBottomStyle: "solid", cursor: "pointer" }
+      className: "pc-label text-[11px] font-semibold",
+      style: { color: view === "stats" ? theme.text : theme.muted, background: "transparent", border: "none", borderBottom: view === "stats" ? `1.5px solid ${theme.text}` : "1.5px solid transparent", paddingBottom: 3, cursor: "pointer" }
     },
     "Stats"
-  )), /* @__PURE__ */ React.createElement("div", { className: "relative flex-1 min-w-[160px]" }, /* @__PURE__ */ React.createElement(Search, { size: 15, style: { color: theme.muted }, className: "absolute left-3 top-1/2 -translate-y-1/2" }), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "relative flex-1 min-w-[160px] flex items-center gap-2", style: { borderBottom: `1px solid ${theme.border}`, paddingBottom: 5 } }, /* @__PURE__ */ React.createElement(Search, { size: 12, style: { color: theme.muted }, className: "shrink-0" }), /* @__PURE__ */ React.createElement(
     "input",
     {
       value: search,
@@ -2280,9 +2285,10 @@ function PhotocardTracker({ isOwner = true } = {}) {
         setVisibleCount(60);
       },
       placeholder: "Search group, member, release, item type, source, character, seller, notes...",
-      className: "w-full pl-9 pr-3 py-2 rounded-lg text-sm"
+      className: "w-full text-sm",
+      style: { background: "transparent", border: "none", padding: 0 }
     }
-  )), isOwner && view === "main" && /* @__PURE__ */ React.createElement("button", { onClick: openAdd, className: "flex items-center gap-1.5 px-4 py-2 rounded-lg font-medium text-sm shrink-0", style: { background: theme.accent, color: theme.bg } }, /* @__PURE__ */ React.createElement(Plus, { size: 16 }), " Add card")), view === "main" && /* @__PURE__ */ React.createElement(React.Fragment, null, statsCardFilter && /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-3 py-2 rounded-lg mb-3 text-xs", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("span", null, "Showing ", statsCardFilter.size, " card", statsCardFilter.size !== 1 ? "s" : "", " from Stats"), /* @__PURE__ */ React.createElement("button", { onClick: clearStatsCardFilter, className: "underline font-medium" }, "Clear")), search && /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-3", style: { color: theme.muted } }, filtered.length, " card", filtered.length !== 1 ? "s" : "", " match \u201C", search, "\u201D"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 overflow-x-auto pc-scroll pb-1" }, [{ value: "", label: "Everything" }, { value: "owned", label: "Owned" }, { value: "missing", label: "Not owned" }, { value: "wishlist", label: "Wishlist" }].map((o) => /* @__PURE__ */ React.createElement(
+  )), isOwner && view === "main" && /* @__PURE__ */ React.createElement("button", { onClick: openAdd, className: "flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium shrink-0", style: { background: theme.accent, color: theme.bg } }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }), " Add card")), view === "main" && /* @__PURE__ */ React.createElement(React.Fragment, null, statsCardFilter && /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-3 py-2 rounded mb-3 text-xs", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("span", null, "Showing ", statsCardFilter.size, " card", statsCardFilter.size !== 1 ? "s" : "", " from Stats"), /* @__PURE__ */ React.createElement("button", { onClick: clearStatsCardFilter, className: "underline font-medium" }, "Clear")), search && /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-3", style: { color: theme.muted } }, filtered.length, " card", filtered.length !== 1 ? "s" : "", " match \u201C", search, "\u201D"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 overflow-x-auto pc-scroll pb-1" }, [{ value: "", label: "Everything" }, { value: "owned", label: "Owned" }, { value: "missing", label: "Not owned" }, { value: "wishlist", label: "Wishlist" }].map((o) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: o.value,
@@ -2290,97 +2296,113 @@ function PhotocardTracker({ isOwner = true } = {}) {
         setFilterOwned(o.value);
         setVisibleCount(60);
       },
-      className: "px-3 py-1.5 rounded-full text-xs font-medium shrink-0 whitespace-nowrap",
-      style: { background: filterOwned === o.value ? theme.accent : theme.surfaceAlt, color: filterOwned === o.value ? theme.bg : theme.text, border: `1px solid ${theme.border}` }
+      className: "px-2.5 py-1 rounded text-[11px] font-medium shrink-0 whitespace-nowrap",
+      style: chip(filterOwned === o.value)
     },
     o.label
-  ))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { className: "relative flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setShowFilters((s) => !s),
-      className: "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium shrink-0",
-      style: { background: activeFilterCount ? theme.accent : theme.surfaceAlt, color: activeFilterCount ? theme.bg : theme.text, border: `1px solid ${theme.border}` }
+      className: "flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium shrink-0",
+      style: chip(!!activeFilterCount)
     },
     "Filters ",
     activeFilterCount > 0 && `(${activeFilterCount})`,
-    /* @__PURE__ */ React.createElement(ChevronDown, { size: 13, style: { transform: showFilters ? "rotate(180deg)" : "none", transition: "transform .15s" } })
-  ), activeFilterCount > 0 && /* @__PURE__ */ React.createElement("button", { onClick: clearFilters, className: "flex items-center gap-1 px-3 py-1.5 rounded-full text-xs shrink-0", style: { color: theme.muted } }, /* @__PURE__ */ React.createElement(RotateCcw, { size: 12 }), " Clear"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-end gap-2 mb-4 overflow-x-auto pc-scroll pb-1" }, [{ value: "compact", label: "Compact" }, { value: "comfortable", label: "Comfortable" }, { value: "gallery", label: "Gallery" }].map((d) => /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement(ChevronDown, { size: 12, style: { transform: showFilters ? "rotate(180deg)" : "none", transition: "transform .15s" } })
+  ), activeFilterCount > 0 && /* @__PURE__ */ React.createElement("button", { onClick: clearFilters, className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] shrink-0", style: { color: theme.muted } }, /* @__PURE__ */ React.createElement(RotateCcw, { size: 11 }), " Clear"), showFilters && /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "absolute right-0 top-full mt-2 z-30 p-3 space-y-3.5 overflow-y-auto pc-scroll",
+      style: { background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: 6, width: "min(90vw, 460px)", maxHeight: "70vh", boxShadow: "0 12px 32px rgba(0,0,0,0.15)" }
+    },
+    /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "pc-label text-[10px] mb-1.5", style: { color: theme.muted } }, "Search field"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, [{ value: "all", label: "All fields" }, { value: "member", label: "Member" }, { value: "album", label: "Release" }, { value: "category", label: "Card Type" }, { value: "source", label: "Source" }, { value: "notes", label: "Notes" }].map((f) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: f.value,
+        onClick: () => setSearchField(f.value),
+        className: "px-2 py-0.5 rounded text-[11px] font-medium shrink-0",
+        style: chip(searchField === f.value)
+      },
+      f.label
+    ))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] mt-1.5", style: { color: theme.muted } }, searchField === "all" ? "Searching member, release, card type, source, notes." : `Only matching the "${{ member: "Member", album: "Release", category: "Card Type", source: "Source", notes: "Notes" }[searchField]}" field.`)),
+    savedViews.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mb-1.5", style: { color: theme.muted } }, "Saved views"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, savedViews.map((v) => /* @__PURE__ */ React.createElement("span", { key: v.id, className: "flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded text-xs font-medium", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyView(v) }, v.name), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => deleteView(v.id), style: { color: theme.muted } }, /* @__PURE__ */ React.createElement(X, { size: 11 })))))),
+    /* @__PURE__ */ React.createElement(ChipMultiSelect, { label: "Member", options: filterMembers, selected: selectedMemberFilters, onToggle: (v) => {
+      toggleSetValue(setSelectedMemberFilters, v);
+      setVisibleCount(60);
+    } }),
+    /* @__PURE__ */ React.createElement(ChipMultiSelect, { label: "Release", options: filterAlbums, selected: selectedAlbumFilters, onToggle: (v) => {
+      toggleSetValue(setSelectedAlbumFilters, v);
+      setVisibleCount(60);
+    } }),
+    /* @__PURE__ */ React.createElement(ChipMultiSelect, { label: "Card type", options: categories, selected: selectedCategoryFilters, onToggle: (v) => {
+      toggleSetValue(setSelectedCategoryFilters, v);
+      setVisibleCount(60);
+    } }),
+    /* @__PURE__ */ React.createElement(ChipMultiSelect, { label: "Source", options: sourceOptions, selected: selectedSourceFilters, onToggle: (v) => {
+      toggleSetValue(setSelectedSourceFilters, v);
+      setVisibleCount(60);
+    } }),
+    /* @__PURE__ */ React.createElement(ChipMultiSelect, { label: "Status", options: STATUSES.map((s) => s.value), selected: selectedStatusFilters, onToggle: (v) => {
+      toggleSetValue(setSelectedStatusFilters, v);
+      setVisibleCount(60);
+    } }),
+    /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mb-1.5", style: { color: theme.muted } }, "Price paid (\u20B1)"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", value: priceMin, onChange: (e) => {
+      setPriceMin(e.target.value);
+      setVisibleCount(60);
+    }, placeholder: "Min", className: "w-full px-2.5 py-1.5 rounded text-sm" }), /* @__PURE__ */ React.createElement("span", { style: { color: theme.muted } }, "\u2013"), /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", value: priceMax, onChange: (e) => {
+      setPriceMax(e.target.value);
+      setVisibleCount(60);
+    }, placeholder: "Max", className: "w-full px-2.5 py-1.5 rounded text-sm" }))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mb-1.5", style: { color: theme.muted } }, "Purchased between"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("input", { type: "date", value: purchaseDateFrom, onChange: (e) => {
+      setPurchaseDateFrom(e.target.value);
+      setVisibleCount(60);
+    }, className: "w-full px-2 py-1.5 rounded text-sm" }), /* @__PURE__ */ React.createElement("input", { type: "date", value: purchaseDateTo, onChange: (e) => {
+      setPurchaseDateTo(e.target.value);
+      setVisibleCount(60);
+    }, className: "w-full px-2 py-1.5 rounded text-sm" })))),
+    /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowMoreFilters((s) => !s), className: "flex items-center gap-1 text-xs font-medium", style: { color: theme.accent } }, "More filters ", /* @__PURE__ */ React.createElement(ChevronDown, { size: 12, style: { transform: showMoreFilters ? "rotate(180deg)" : "none", transition: "transform .15s" } })), showMoreFilters && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2" }, /* @__PURE__ */ React.createElement("select", { value: filterGroup, onChange: (e) => {
+      setFilterGroup(e.target.value);
+      setSelectedMemberFilters(/* @__PURE__ */ new Set());
+      setSelectedAlbumFilters(/* @__PURE__ */ new Set());
+      setVisibleCount(60);
+    }, className: "px-2 py-2 rounded text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "All groups"), groups.map((g) => /* @__PURE__ */ React.createElement("option", { key: g, value: g }, g))), /* @__PURE__ */ React.createElement("select", { value: filterItemType, onChange: (e) => {
+      setFilterItemType(e.target.value);
+      setVisibleCount(60);
+    }, className: "px-2 py-2 rounded text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "All item types"), itemTypeOptions.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))), /* @__PURE__ */ React.createElement("select", { value: filterProductFormat, onChange: (e) => {
+      setFilterProductFormat(e.target.value);
+      setVisibleCount(60);
+    }, className: "px-2 py-2 rounded text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "All formats"), productFormatOptions.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))), /* @__PURE__ */ React.createElement("select", { value: filterVersionTag, onChange: (e) => {
+      setFilterVersionTag(e.target.value);
+      setVisibleCount(60);
+    }, className: "px-2 py-2 rounded text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "All versions/editions"), versionDetailOptions.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))), /* @__PURE__ */ React.createElement("select", { value: filterCharacterSeries, onChange: (e) => {
+      setFilterCharacterSeries(e.target.value);
+      setVisibleCount(60);
+    }, className: "px-2 py-2 rounded text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "All character series"), characterSeriesOptions.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))), /* @__PURE__ */ React.createElement("select", { value: filterCharacter, onChange: (e) => {
+      setFilterCharacter(e.target.value);
+      setVisibleCount(60);
+    }, className: "px-2 py-2 rounded text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "All characters"), characterOptions.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))))),
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 pt-1", style: { borderTop: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("select", { value: sortBy, onChange: (e) => setSortBy(e.target.value), className: "px-2 py-2 rounded text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "recent" }, "Recently added"), /* @__PURE__ */ React.createElement("option", { value: "group" }, "Group A\u2013Z"), /* @__PURE__ */ React.createElement("option", { value: "member" }, "Member A\u2013Z"), /* @__PURE__ */ React.createElement("option", { value: "version" }, "Version / edition A\u2013Z"), /* @__PURE__ */ React.createElement("option", { value: "release" }, "Release date"), /* @__PURE__ */ React.createElement("option", { value: "spent-high" }, "Total spent: high to low"), /* @__PURE__ */ React.createElement("option", { value: "spent-low" }, "Total spent: low to high"), /* @__PURE__ */ React.createElement("option", { value: "purchased" }, "Purchase date (groups by month)")), savingView ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("input", { autoFocus: true, value: savedViewName, onChange: (e) => setSavedViewName(e.target.value), placeholder: "View name", className: "px-2 py-1.5 rounded text-xs w-28" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveCurrentView, className: "text-xs font-medium", style: { color: theme.accent } }, "Save"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      setSavingView(false);
+      setSavedViewName("");
+    }, className: "text-xs", style: { color: theme.muted } }, "Cancel")) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSavingView(true), className: "text-xs font-medium underline", style: { color: theme.muted } }, "Save this as a view"))
+  ))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-end gap-2 mb-4 overflow-x-auto pc-scroll pb-1" }, [{ value: "compact", label: "Compact" }, { value: "comfortable", label: "Comfortable" }, { value: "gallery", label: "Gallery" }].map((d) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: d.value,
       onClick: () => setGridDensity(d.value),
-      className: "px-3 py-1.5 rounded-full text-xs font-medium shrink-0",
-      style: { background: gridDensity === d.value ? theme.accent : theme.surfaceAlt, color: gridDensity === d.value ? theme.bg : theme.muted, border: `1px solid ${theme.border}` }
+      className: "px-2.5 py-1 rounded text-[11px] font-medium shrink-0",
+      style: chip(gridDensity === d.value)
     },
     d.label
-  )), isOwner && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "w-px h-5 shrink-0", style: { background: theme.border } }), /* @__PURE__ */ React.createElement(
+  )), isOwner && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "w-px h-4 shrink-0", style: { background: theme.border } }), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: toggleSelectMode,
-      className: "px-3 py-1.5 rounded-full text-xs font-medium shrink-0",
-      style: { background: selectMode ? theme.accent : theme.surfaceAlt, color: selectMode ? theme.bg : theme.text, border: `1px solid ${theme.border}` }
+      className: "px-2.5 py-1 rounded text-[11px] font-medium shrink-0",
+      style: chip(selectMode)
     },
     selectMode ? "Cancel" : "Select"
-  ))), showFilters && /* @__PURE__ */ React.createElement("div", { className: "mb-4 p-3 rounded-xl space-y-4", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mb-1.5", style: { color: theme.muted } }, "Search field"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, [{ value: "all", label: "All fields" }, { value: "member", label: "Member" }, { value: "album", label: "Release" }, { value: "category", label: "Card Type" }, { value: "source", label: "Source" }, { value: "notes", label: "Notes" }].map((f) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      key: f.value,
-      onClick: () => setSearchField(f.value),
-      className: "px-2.5 py-1 rounded-full text-xs font-medium shrink-0",
-      style: { background: searchField === f.value ? theme.accent : theme.surfaceAlt, color: searchField === f.value ? theme.bg : theme.muted, border: `1px solid ${theme.border}` }
-    },
-    f.label
-  ))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mt-1.5", style: { color: theme.muted } }, searchField === "all" ? "Searching member, release, card type, source, notes." : `Only matching the "${{ member: "Member", album: "Release", category: "Card Type", source: "Source", notes: "Notes" }[searchField]}" field.`)), savedViews.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mb-1.5", style: { color: theme.muted } }, "Saved views"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, savedViews.map((v) => /* @__PURE__ */ React.createElement("span", { key: v.id, className: "flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full text-xs font-medium", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyView(v) }, v.name), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => deleteView(v.id), style: { color: theme.muted } }, /* @__PURE__ */ React.createElement(X, { size: 11 })))))), /* @__PURE__ */ React.createElement(ChipMultiSelect, { label: "Member", options: filterMembers, selected: selectedMemberFilters, onToggle: (v) => {
-    toggleSetValue(setSelectedMemberFilters, v);
-    setVisibleCount(60);
-  } }), /* @__PURE__ */ React.createElement(ChipMultiSelect, { label: "Release", options: filterAlbums, selected: selectedAlbumFilters, onToggle: (v) => {
-    toggleSetValue(setSelectedAlbumFilters, v);
-    setVisibleCount(60);
-  } }), /* @__PURE__ */ React.createElement(ChipMultiSelect, { label: "Card type", options: categories, selected: selectedCategoryFilters, onToggle: (v) => {
-    toggleSetValue(setSelectedCategoryFilters, v);
-    setVisibleCount(60);
-  } }), /* @__PURE__ */ React.createElement(ChipMultiSelect, { label: "Source", options: sourceOptions, selected: selectedSourceFilters, onToggle: (v) => {
-    toggleSetValue(setSelectedSourceFilters, v);
-    setVisibleCount(60);
-  } }), /* @__PURE__ */ React.createElement(ChipMultiSelect, { label: "Status", options: STATUSES.map((s) => s.value), selected: selectedStatusFilters, onToggle: (v) => {
-    toggleSetValue(setSelectedStatusFilters, v);
-    setVisibleCount(60);
-  } }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mb-1.5", style: { color: theme.muted } }, "Price paid (\u20B1)"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", value: priceMin, onChange: (e) => {
-    setPriceMin(e.target.value);
-    setVisibleCount(60);
-  }, placeholder: "Min", className: "w-full px-2.5 py-1.5 rounded-lg text-sm" }), /* @__PURE__ */ React.createElement("span", { style: { color: theme.muted } }, "\u2013"), /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", value: priceMax, onChange: (e) => {
-    setPriceMax(e.target.value);
-    setVisibleCount(60);
-  }, placeholder: "Max", className: "w-full px-2.5 py-1.5 rounded-lg text-sm" }))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mb-1.5", style: { color: theme.muted } }, "Purchased between"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("input", { type: "date", value: purchaseDateFrom, onChange: (e) => {
-    setPurchaseDateFrom(e.target.value);
-    setVisibleCount(60);
-  }, className: "w-full px-2 py-1.5 rounded-lg text-sm" }), /* @__PURE__ */ React.createElement("input", { type: "date", value: purchaseDateTo, onChange: (e) => {
-    setPurchaseDateTo(e.target.value);
-    setVisibleCount(60);
-  }, className: "w-full px-2 py-1.5 rounded-lg text-sm" })))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowMoreFilters((s) => !s), className: "flex items-center gap-1 text-xs font-medium", style: { color: theme.accent } }, "More filters ", /* @__PURE__ */ React.createElement(ChevronDown, { size: 12, style: { transform: showMoreFilters ? "rotate(180deg)" : "none", transition: "transform .15s" } })), showMoreFilters && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2" }, /* @__PURE__ */ React.createElement("select", { value: filterGroup, onChange: (e) => {
-    setFilterGroup(e.target.value);
-    setSelectedMemberFilters(/* @__PURE__ */ new Set());
-    setSelectedAlbumFilters(/* @__PURE__ */ new Set());
-    setVisibleCount(60);
-  }, className: "px-2 py-2 rounded-lg text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "All groups"), groups.map((g) => /* @__PURE__ */ React.createElement("option", { key: g, value: g }, g))), /* @__PURE__ */ React.createElement("select", { value: filterItemType, onChange: (e) => {
-    setFilterItemType(e.target.value);
-    setVisibleCount(60);
-  }, className: "px-2 py-2 rounded-lg text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "All item types"), itemTypeOptions.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))), /* @__PURE__ */ React.createElement("select", { value: filterProductFormat, onChange: (e) => {
-    setFilterProductFormat(e.target.value);
-    setVisibleCount(60);
-  }, className: "px-2 py-2 rounded-lg text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "All formats"), productFormatOptions.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))), /* @__PURE__ */ React.createElement("select", { value: filterVersionTag, onChange: (e) => {
-    setFilterVersionTag(e.target.value);
-    setVisibleCount(60);
-  }, className: "px-2 py-2 rounded-lg text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "All versions/editions"), versionDetailOptions.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))), /* @__PURE__ */ React.createElement("select", { value: filterCharacterSeries, onChange: (e) => {
-    setFilterCharacterSeries(e.target.value);
-    setVisibleCount(60);
-  }, className: "px-2 py-2 rounded-lg text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "All character series"), characterSeriesOptions.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))), /* @__PURE__ */ React.createElement("select", { value: filterCharacter, onChange: (e) => {
-    setFilterCharacter(e.target.value);
-    setVisibleCount(60);
-  }, className: "px-2 py-2 rounded-lg text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "All characters"), characterOptions.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 pt-1", style: { borderTop: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("select", { value: sortBy, onChange: (e) => setSortBy(e.target.value), className: "px-2 py-2 rounded-lg text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "recent" }, "Recently added"), /* @__PURE__ */ React.createElement("option", { value: "group" }, "Group A\u2013Z"), /* @__PURE__ */ React.createElement("option", { value: "member" }, "Member A\u2013Z"), /* @__PURE__ */ React.createElement("option", { value: "version" }, "Version / edition A\u2013Z"), /* @__PURE__ */ React.createElement("option", { value: "release" }, "Release date"), /* @__PURE__ */ React.createElement("option", { value: "spent-high" }, "Total spent: high to low"), /* @__PURE__ */ React.createElement("option", { value: "spent-low" }, "Total spent: low to high"), /* @__PURE__ */ React.createElement("option", { value: "purchased" }, "Purchase date (groups by month)")), savingView ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("input", { autoFocus: true, value: savedViewName, onChange: (e) => setSavedViewName(e.target.value), placeholder: "View name", className: "px-2 py-1.5 rounded-lg text-xs w-28" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveCurrentView, className: "text-xs font-medium", style: { color: theme.accent } }, "Save"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
-    setSavingView(false);
-    setSavedViewName("");
-  }, className: "text-xs", style: { color: theme.muted } }, "Cancel")) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSavingView(true), className: "text-xs font-medium underline", style: { color: theme.muted } }, "Save this as a view"))), !loaded ? /* @__PURE__ */ React.createElement("div", { className: "text-sm py-12 text-center", style: { color: theme.muted } }, "Loading your collection...") : filtered.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-16 rounded-xl px-6", style: { background: theme.surface, border: `1px dashed ${theme.border}` } }, cards.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-sm", style: { color: theme.muted } }, "No photocards yet. Add your first one.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "text-sm mb-1" }, "Nothing matches that yet"), (activeFilterCount > 0 || search) && /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-4", style: { color: theme.muted } }, activeFilterCount > 0 && `${activeFilterCount} filter${activeFilterCount !== 1 ? "s are" : " is"} still on, which might be hiding it. `, search && "You can also add this as a wishlist entry so it's waiting for you when it arrives."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-2 flex-wrap mb-3" }, isOwner && search && /* @__PURE__ */ React.createElement(
+  ))), !loaded ? /* @__PURE__ */ React.createElement("div", { className: "text-sm py-12 text-center", style: { color: theme.muted } }, "Loading your collection...") : filtered.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-16 rounded-xl px-6", style: { background: theme.surface, border: `1px dashed ${theme.border}` } }, cards.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-sm", style: { color: theme.muted } }, "No photocards yet. Add your first one.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "text-sm mb-1" }, "Nothing matches that yet"), (activeFilterCount > 0 || search) && /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-4", style: { color: theme.muted } }, activeFilterCount > 0 && `${activeFilterCount} filter${activeFilterCount !== 1 ? "s are" : " is"} still on, which might be hiding it. `, search && "You can also add this as a wishlist entry so it's waiting for you when it arrives."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-2 flex-wrap mb-3" }, isOwner && search && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -2388,11 +2410,11 @@ function PhotocardTracker({ isOwner = true } = {}) {
         setEditingId(null);
         setModalMode("add");
       },
-      className: "px-3 py-1.5 rounded-full text-xs font-medium",
+      className: "px-3 py-1.5 rounded text-xs font-medium",
       style: { background: theme.accent, color: theme.bg }
     },
     "Add to wishlist"
-  ), activeFilterCount > 0 && /* @__PURE__ */ React.createElement("button", { onClick: clearFiltersOnly, className: "px-3 py-1.5 rounded-full text-xs font-medium", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, "Clear ", activeFilterCount, " filter", activeFilterCount !== 1 ? "s" : ""), search && searchField !== "all" && /* @__PURE__ */ React.createElement("button", { onClick: () => setSearchField("all"), className: "px-3 py-1.5 rounded-full text-xs font-medium", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, "Search all fields")), search && (() => {
+  ), activeFilterCount > 0 && /* @__PURE__ */ React.createElement("button", { onClick: clearFiltersOnly, className: "px-3 py-1.5 rounded text-xs font-medium", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, "Clear ", activeFilterCount, " filter", activeFilterCount !== 1 ? "s" : ""), search && searchField !== "all" && /* @__PURE__ */ React.createElement("button", { onClick: () => setSearchField("all"), className: "px-3 py-1.5 rounded-full text-xs font-medium", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, "Search all fields")), search && (() => {
     const pool = [...allAlbums, ...allMembers, ...categories, ...sourceOptions];
     const suggestions = didYouMeanSuggestions(search, pool);
     return suggestions.length > 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-xs" }, /* @__PURE__ */ React.createElement("span", { style: { color: theme.muted } }, "Did you mean: "), suggestions.map((s, i) => /* @__PURE__ */ React.createElement("span", { key: s }, i > 0 && /* @__PURE__ */ React.createElement("span", { style: { color: theme.muted } }, " \xB7 "), /* @__PURE__ */ React.createElement("button", { onClick: () => setSearch(s), className: "underline", style: { color: theme.accent } }, s)))) : null;
