@@ -1564,7 +1564,12 @@ function PhotocardTracker({ isOwner = true } = {}) {
           byDay[d].ids.add(m.card.id);
         }
       });
-      timeBreakdown = Object.entries(byDay).sort((a, b) => a[0].localeCompare(b[0])).map(([d, v]) => ({ label: formatFlexDate(d), count: v.count, spent: v.spent, ids: v.ids }));
+      timeBreakdown = Object.entries(byDay).sort((a, b) => a[0].localeCompare(b[0])).map(([d, v]) => {
+        const { month, day } = parseFlexDate(d);
+        const mi = parseInt(month, 10) - 1;
+        const shortLabel = MONTH_NAMES[mi] ? `${MONTH_NAMES[mi].slice(0, 3)} ${parseInt(day, 10)}` : d;
+        return { label: shortLabel, count: v.count, spent: v.spent, ids: v.ids };
+      });
     } else if (statsBounds.type === "year") {
       const byMonth = {};
       matches.forEach((m) => {
