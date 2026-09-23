@@ -140,6 +140,7 @@ const DEFAULT_CATEGORIES = [
   "Merch Inclusion",
   "POB",
   "Pop-up Benefit",
+  "Random Pull / Trading",
   "Retail Exclusive",
   "Special Event",
   "Tour / Concert Benefit",
@@ -149,11 +150,24 @@ const DEFAULT_CATEGORIES = [
 ];
 const HARDCODED_SOURCES = [
   "ATEEZ Official / KQ",
+  "4nologue",
+  "ALLMD",
   "Apple Music",
+  "B.Stage",
   "Barnes & Noble",
+  "Beatroad",
+  "Billboard Magazine",
+  "Bonus Exclusive",
+  "Brmud",
+  "CGV",
+  "CU",
+  "Cashbee",
+  "Cawaii!",
   "DICON",
+  "DMC Music",
   "DearMyMuse",
   "EMART",
+  "EU Exclusive",
   "Everline",
   "FNAC",
   "Fromm Store",
@@ -161,41 +175,102 @@ const HARDCODED_SOURCES = [
   "HELLOLIVE",
   "HIGHER",
   "HMV Japan",
+  "Houseofkpop",
+  "Idol Radio",
+  "Indie Exclusive",
+  "Interasia",
+  "International Exclusive",
+  "JJ Muze",
   "Japan Fan Club",
   "Jump Up Ent",
+  "K*Bang Magazine",
+  "KMonstar",
+  "KNPOPS",
   "KPOPSTORE",
   "KTOWN4U",
+  "Kaura",
+  "Kplayground",
+  "Kpop Nara",
+  "Kpop2gether",
+  "LATAM Exclusive",
+  "Line Friends",
+  "Lotte",
+  "MAMA",
+  "MBC Gayo Daejeon",
   "MMT / MyMusicTaste",
   "Makestar",
+  "Matsukiyo",
+  "Mernel",
+  "MiniRecord",
   "Mokketshop",
   "Music Art",
+  "Music Core",
   "Music Korea",
+  "Music Plant",
+  "Musinsa",
+  "NHN Ticketlink",
+  "NY Music",
   "Nacific",
+  "Neotokyo",
+  "Neowing",
+  "Olive Young",
+  "Ourbakery",
+  "Pepsi",
+  "Perrier",
   "Pott",
   "Rakuten Japan",
+  "SBS Gayo Daejeon",
+  "Seoul Festa",
   "Silent Soul",
   "Soundwave",
+  "Subk Shop",
   "Synnara",
   "TOKTOQ",
   "Target",
+  "TheSandbox",
   "Tower Records Japan",
+  "UK Exclusive",
+  "UMS",
+  "US Exclusive",
+  "Universal",
+  "Universal Studios Japan",
+  "Urban Outfitters",
+  "Vandythepink",
+  "WW",
   "Walmart",
+  "Whosfan Cafe",
   "WithDrama",
   "WithMUU",
   "Wonderwall",
   "YES24",
+  "YZY",
   "Other"
+];
+const JP_SOURCES = [
+  "HMV Japan",
+  "Rakuten Japan",
+  "Tower Records Japan",
+  "Japan Fan Club",
+  "Neowing",
+  "Kpop Nara",
+  "Universal Studios Japan",
+  "UMS"
 ];
 const DEFAULT_ITEM_TYPES = [
   "Photocard",
   "Bookmark",
+  "Character Card",
   "Film Photo",
+  "ID Card",
   "ID Photo",
+  "Image Card",
   "Mini Poster",
   "Photo Set",
   "Polaroid",
   "Postcard",
+  "QR Card",
   "Sticker",
+  "Timepiece Card",
   "Trading Card",
   "Other"
 ];
@@ -204,6 +279,7 @@ const DEFAULT_PRODUCT_FORMATS = [
   "POCAALBUM",
   "Digipack",
   "Birthday MD",
+  "CD Player",
   "CD Player Album",
   "Character Merch",
   "Collaboration Product",
@@ -213,15 +289,23 @@ const DEFAULT_PRODUCT_FORMATS = [
   "ID Photo Set",
   "Japan Fan Club Membership",
   "Jewel Case",
+  "Lenticular",
   "Membership Kit",
   "Official Merch / MD",
   "Photo Set",
   "Photobook",
+  "Platform Album",
   "Pop-up Merch",
   "Season's Greetings",
+  "Single CD / Jewel Case",
+  "Spring Special MD",
+  "Summer Special MD",
   "Tour / Concert Merch",
   "Trading Card / Photocard Pack",
+  "Travel Pack",
+  "Vinyl",
   "Vinyl / LP",
+  "Winter Special MD",
   "Other"
 ];
 const DEFAULT_VERSION_DETAILS = [
@@ -246,9 +330,138 @@ const DEFAULT_VERSION_DETAILS = [
   "Seonghwa",
   "Wooyoung",
   "Yeosang",
-  "Yunho"
+  "Yunho",
+  "Winter",
+  "Summer",
+  "Spring",
+  "Glossy",
+  "Matte",
+  "Week 1",
+  "Week 2",
+  "Week 3",
+  "Week 4",
+  "Week 5",
+  "Round 1",
+  "Round 2",
+  "Round 3",
+  "Round 4",
+  "Round 5",
+  "Round 6",
+  "Round 7",
+  "Round 8",
+  "Round 9",
+  "Round 10",
+  "Streaming Event",
+  "Streaming Event Unit",
+  "Streaming Event Group",
+  "Download Event",
+  "Unit"
 ];
 const DEFAULT_CHARACTER_SERIES = ["ANITEEZ", "MIGHTEEZ", "Birthday Characters"];
+const RELEASE_CATEGORIES = ["Music Release", "Merch Collection", "Concert / Tour"];
+const RELEASE_CATEGORY_LINES = {
+  "Music Release": ["Full Album", "Mini Album", "Single", "Special Album", "Japan Release"],
+  "Merch Collection": [
+    "ANITEEZ",
+    "MIGHTEEZ",
+    "8M1S",
+    "HIGHER TIMEPIECE",
+    "Season's Greetings",
+    "Summer Photobook",
+    "SuperStar",
+    "ATINY Fankit",
+    "Anniversary",
+    "Pop-up Event",
+    "Other"
+  ],
+  // Concert / Tour's second tier is Tour vs. Fanmeeting rather than a picked-from-list Collection/Line —
+  // still stored in the same `collectionLine` field so the rest of the app doesn't need a separate slot.
+  "Concert / Tour": ["Tour", "Fanmeeting"]
+};
+const RELEASE_TO_COLLECTION_LINE = {
+  "TREASURE EP.FIN: All To Action": { cat: "Music Release", line: "Full Album" },
+  "ZERO : FEVER Part.1": { cat: "Music Release", line: "Full Album" },
+  "THE WORLD EP.FIN: WILL": { cat: "Music Release", line: "Full Album" },
+  "Ashes to Light": { cat: "Music Release", line: "Full Album" },
+  "TREASURE EP.1: All To Zero": { cat: "Music Release", line: "Mini Album" },
+  "TREASURE EP.2: Zero To One": { cat: "Music Release", line: "Mini Album" },
+  "TREASURE EP.3: One To All": { cat: "Music Release", line: "Mini Album" },
+  "TREASURE EPILOGUE: Action To Answer": { cat: "Music Release", line: "Mini Album" },
+  "ZERO : FEVER Part.2": { cat: "Music Release", line: "Mini Album" },
+  "ZERO : FEVER Part.3": { cat: "Music Release", line: "Mini Album" },
+  "ZERO : FEVER EPILOGUE": { cat: "Music Release", line: "Mini Album" },
+  "THE WORLD EP.1: MOVEMENT": { cat: "Music Release", line: "Mini Album" },
+  "THE WORLD EP.2: OUTLAW": { cat: "Music Release", line: "Mini Album" },
+  "GOLDEN HOUR : Part.1": { cat: "Music Release", line: "Mini Album" },
+  "GOLDEN HOUR : Part.2": { cat: "Music Release", line: "Mini Album" },
+  "GOLDEN HOUR : Part.3": { cat: "Music Release", line: "Mini Album" },
+  "GOLDEN HOUR : Part.4": { cat: "Music Release", line: "Mini Album" },
+  "GOLDEN HOUR : Part.5": { cat: "Music Release", line: "Mini Album" },
+  "Birthday": { cat: "Music Release", line: "Mini Album" },
+  "GOLDEN HOUR : Part.3 In Your Fantasy Edition": { cat: "Music Release", line: "Special Album" },
+  "SPIN OFF: FROM THE WITNESS": { cat: "Music Release", line: "Single" },
+  "Dreamers": { cat: "Music Release", line: "Single" },
+  "Limitless": { cat: "Music Release", line: "Single" },
+  "NOT OKAY": { cat: "Music Release", line: "Single" },
+  "TREASURE EP.EXTRA: Shift The Map": { cat: "Music Release", line: "Japan Release" },
+  "Into the A to Z": { cat: "Music Release", line: "Japan Release" },
+  "BEYOND : ZERO": { cat: "Music Release", line: "Japan Release" },
+  "BAD (Japanese ver.)": { cat: "Music Release", line: "Japan Release" },
+  "THE WORLD EP. Paradigm": { cat: "Music Release", line: "Japan Release" },
+  "ANITEEZ IN ILLUSION": { cat: "Merch Collection", line: "ANITEEZ" },
+  "ANITEEZ IN ICE CITY": { cat: "Merch Collection", line: "ANITEEZ" },
+  "ANITEEZ IN DREAMLAND": { cat: "Merch Collection", line: "ANITEEZ" },
+  "ANITEEZ IN TREASURE": { cat: "Merch Collection", line: "ANITEEZ" },
+  "ANITEEZ IN THE CALLING": { cat: "Merch Collection", line: "ANITEEZ" },
+  "ANITEEZ IN DEJA VU": { cat: "Merch Collection", line: "ANITEEZ" },
+  "Press, Start! Enter the MIGHTEEZ World": { cat: "Merch Collection", line: "MIGHTEEZ" },
+  "MIGHTEEZ Wonder Room": { cat: "Merch Collection", line: "MIGHTEEZ" },
+  "GOLDEN HOUR : Part.4 NASA": { cat: "Merch Collection", line: "HIGHER TIMEPIECE" },
+  "GOLDEN HOUR : Part.4 SPACE ver.": { cat: "Merch Collection", line: "HIGHER TIMEPIECE" },
+  "2020 Season's Greetings": { cat: "Merch Collection", line: "Season's Greetings" },
+  "2021 Season's Greetings": { cat: "Merch Collection", line: "Season's Greetings" },
+  "2022 Season's Greetings": { cat: "Merch Collection", line: "Season's Greetings" },
+  "2023 Season's Greetings": { cat: "Merch Collection", line: "Season's Greetings" },
+  "2024 Season's Greetings": { cat: "Merch Collection", line: "Season's Greetings" },
+  "2025 Season's Greetings": { cat: "Merch Collection", line: "Season's Greetings" },
+  "2026 Season's Greetings": { cat: "Merch Collection", line: "Season's Greetings" },
+  "2022 Summer Photobook": { cat: "Merch Collection", line: "Summer Photobook" },
+  "2023 Summer Photobook": { cat: "Merch Collection", line: "Summer Photobook" },
+  "2024 Summer Photobook": { cat: "Merch Collection", line: "Summer Photobook" },
+  "Madrid Edition": { cat: "Merch Collection", line: "SuperStar" },
+  "Toronto Edition": { cat: "Merch Collection", line: "SuperStar" },
+  "Sydney Edition": { cat: "Merch Collection", line: "SuperStar" },
+  "London Edition": { cat: "Merch Collection", line: "SuperStar" },
+  "Tokyo Edition": { cat: "Merch Collection", line: "SuperStar" },
+  "2nd Fankit": { cat: "Merch Collection", line: "ATINY Fankit" },
+  "3rd Fankit": { cat: "Merch Collection", line: "ATINY Fankit" },
+  "4th Fankit": { cat: "Merch Collection", line: "ATINY Fankit" },
+  "5th Fankit": { cat: "Merch Collection", line: "ATINY Fankit" },
+  "6th Fankit": { cat: "Merch Collection", line: "ATINY Fankit" },
+  "2nd Anniversary: Port of Call": { cat: "Merch Collection", line: "Anniversary" },
+  "7th Anniversary": { cat: "Merch Collection", line: "Anniversary" },
+  "8ROOM": { cat: "Merch Collection", line: "Pop-up Event" },
+  "Destiny's Memories": { cat: "Merch Collection", line: "Pop-up Event" },
+  "Harajuku XYZ Pop-up": { cat: "Merch Collection", line: "Pop-up Event" },
+  "Taiwan Thunder Merch Pop-up": { cat: "Merch Collection", line: "Pop-up Event" },
+  "Treasure Cafe": { cat: "Merch Collection", line: "Pop-up Event" },
+  "ATINY Room": { cat: "Merch Collection", line: "Pop-up Event" },
+  "XR Concert": { cat: "Merch Collection", line: "Pop-up Event" }
+};
+const AMBIGUOUS_KR_JP_TITLES = ["Limitless", "NOT OKAY", "Birthday", "Ashes to Light"];
+const TOUR_FANMEETING_MAP = {
+  "The Expedition Tour": "Tour",
+  "The Fellowship: Map The Treasure": "Tour",
+  "The Fellowship: Beginning of the End": "Tour",
+  "The Fellowship: Break The Wall": "Tour",
+  "Towards The Light: Will To Power": "Tour",
+  "In Your Fantasy": "Tour",
+  "ATINY's Voyage: From A to Z": "Fanmeeting",
+  "ATINY's Voyage : From A to Z": "Fanmeeting",
+  "DAWN:26": "Fanmeeting",
+  "ATINY's Voyage: Tiny Mystery": "Fanmeeting",
+  "ATINY's Voyage : Tiny Mystery": "Fanmeeting"
+};
 const CHARACTER_MAP = {
   ANITEEZ: ["Jjoongrami", "Ddeongbyeoli", "Tyudeongi", "Hetmongi", "Sandeoki", "Bbyongming", "Wooyonyang", "Jjongbear"],
   MIGHTEEZ: ["Hongyo", "Ddeongyo", "Tyuyo", "Ddangyo", "Saniyo", "Mingyo", "Kkamyo", "Jjongyo"],
@@ -290,6 +503,8 @@ const emptyForm = {
   productFormat: "",
   category: "",
   releaseDate: "",
+  releaseCategory: "",
+  collectionLine: "",
   source: "",
   versionDetail: [],
   characterSeries: "",
@@ -1004,6 +1219,8 @@ function PhotocardTracker({ isOwner = true } = {}) {
   const [filterGroup, setFilterGroup] = useState("");
   const [selectedMemberFilters, setSelectedMemberFilters] = useState(() => /* @__PURE__ */ new Set());
   const [selectedAlbumFilters, setSelectedAlbumFilters] = useState(() => /* @__PURE__ */ new Set());
+  const [selectedReleaseCategoryFilters, setSelectedReleaseCategoryFilters] = useState(() => /* @__PURE__ */ new Set());
+  const [selectedCollectionLineFilters, setSelectedCollectionLineFilters] = useState(() => /* @__PURE__ */ new Set());
   const [selectedCategoryFilters, setSelectedCategoryFilters] = useState(() => /* @__PURE__ */ new Set());
   const [selectedSourceFilters, setSelectedSourceFilters] = useState(() => /* @__PURE__ */ new Set());
   const [selectedStatusFilters, setSelectedStatusFilters] = useState(() => /* @__PURE__ */ new Set());
@@ -1036,7 +1253,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(() => /* @__PURE__ */ new Set());
   const [bulkOpen, setBulkOpen] = useState(false);
-  const [bulkForm, setBulkForm] = useState({ group: "", member: "", album: "", itemType: "", productFormat: "", source: "", versionDetail: [], category: "", characterSeries: "", character: "", releaseDate: "", status: "", dateSold: "", notes: "" });
+  const [bulkForm, setBulkForm] = useState({ group: "", member: "", album: "", releaseCategory: "", collectionLine: "", itemType: "", productFormat: "", source: "", versionDetail: [], category: "", characterSeries: "", character: "", releaseDate: "", status: "", dateSold: "", notes: "" });
   const [bulkCreateOpen, setBulkCreateOpen] = useState(false);
   const [bulkCreateText, setBulkCreateText] = useState("");
   const [bulkCreateError, setBulkCreateError] = useState("");
@@ -1180,11 +1397,63 @@ function PhotocardTracker({ isOwner = true } = {}) {
       return false;
     }
   }, []);
+  const [migrationResult, setMigrationResult] = useState(null);
+  const [migrationRunning, setMigrationRunning] = useState(false);
+  async function runTaxonomyMigration() {
+    setMigrationRunning(true);
+    let categorized = 0, ambiguousFlagged = 0, needsReview = 0, digipakFixed = 0;
+    const reviewList = [];
+    const nextCards = cards.map((c) => {
+      let next = c;
+      if (!next.releaseCategory && next.album) {
+        const hit = RELEASE_TO_COLLECTION_LINE[next.album];
+        const tourHit = TOUR_FANMEETING_MAP[next.album];
+        if (hit) {
+          next = { ...next, releaseCategory: hit.cat, collectionLine: hit.line };
+          categorized += 1;
+          if (AMBIGUOUS_KR_JP_TITLES.includes(next.album)) ambiguousFlagged += 1;
+        } else if (tourHit) {
+          next = { ...next, releaseCategory: "Concert / Tour", collectionLine: tourHit };
+          categorized += 1;
+        } else {
+          needsReview += 1;
+          reviewList.push(next.album);
+        }
+      }
+      if (next.productFormat === "Digipak") {
+        next = { ...next, productFormat: "Digipack" };
+        digipakFixed += 1;
+      }
+      return next;
+    });
+    setCards(nextCards);
+    const ok = await persist(nextCards);
+    const nextSources = [.../* @__PURE__ */ new Set([...customSources, ...HARDCODED_SOURCES])];
+    const nextCategories = [.../* @__PURE__ */ new Set([...customCategories, ...DEFAULT_CATEGORIES])];
+    const nextItemTypes = [.../* @__PURE__ */ new Set([...customItemTypes, ...DEFAULT_ITEM_TYPES])];
+    const nextProductFormats = [.../* @__PURE__ */ new Set([...customProductFormats, ...DEFAULT_PRODUCT_FORMATS])];
+    setCustomSources(nextSources);
+    setCustomCategories(nextCategories);
+    setCustomItemTypes(nextItemTypes);
+    setCustomProductFormats(nextProductFormats);
+    await persistCustomLists(nextSources, nextCategories, nextItemTypes, nextProductFormats);
+    setMigrationRunning(false);
+    setMigrationResult({
+      ok,
+      categorized,
+      ambiguousFlagged,
+      needsReview,
+      reviewList: [...new Set(reviewList)].sort(),
+      digipakFixed
+    });
+  }
   const groups = useMemo(() => [...new Set(cards.map((c) => c.group).filter(Boolean))].sort(), [cards]);
   const filterMembers = useMemo(() => [...new Set(cards.filter((c) => !filterGroup || c.group === filterGroup).map((c) => c.member).filter(Boolean))].sort(), [cards, filterGroup]);
   const filterAlbums = useMemo(() => [...new Set(cards.filter((c) => !filterGroup || c.group === filterGroup).map((c) => c.album).filter(Boolean))].sort(), [cards, filterGroup]);
+  const filterCollectionLines = useMemo(() => [...new Set(cards.filter((c) => selectedReleaseCategoryFilters.size === 0 || selectedReleaseCategoryFilters.has(c.releaseCategory)).map((c) => c.collectionLine).filter(Boolean))].sort(), [cards, selectedReleaseCategoryFilters]);
   const allMembers = useMemo(() => [...new Set(cards.map((c) => c.member).filter(Boolean))].sort(), [cards]);
   const allAlbums = useMemo(() => [...new Set(cards.map((c) => c.album).filter(Boolean))].sort(), [cards]);
+  const allCollectionLines = useMemo(() => [...new Set(cards.map((c) => c.collectionLine).filter(Boolean))].sort(), [cards]);
   const albumUsage = useMemo(() => {
     const map = {};
     cards.forEach((c) => {
@@ -1393,7 +1662,30 @@ function PhotocardTracker({ isOwner = true } = {}) {
     return [.../* @__PURE__ */ new Set([...base, ...used])].sort();
   }, [cards, form.characterSeries, characterOptions]);
   const members = useMemo(() => [...new Set(cards.filter((c) => !form.group || c.group === form.group).map((c) => c.member).filter(Boolean))].sort(), [cards, form.group]);
-  const formAlbums = useMemo(() => [...new Set(cards.filter((c) => !form.group || c.group === form.group).map((c) => c.album).filter(Boolean))].sort(), [cards, form.group]);
+  const formAlbums = useMemo(() => {
+    const fromCards = cards.filter((c) => !form.group || c.group === form.group).map((c) => c.album).filter(Boolean);
+    const tourTitles = Object.keys(TOUR_FANMEETING_MAP);
+    let seedTitles;
+    if (form.releaseCategory === "Concert / Tour") {
+      seedTitles = tourTitles.filter((t) => !form.collectionLine || TOUR_FANMEETING_MAP[t] === form.collectionLine);
+    } else if (form.releaseCategory) {
+      seedTitles = Object.keys(RELEASE_TO_COLLECTION_LINE).filter((t) => {
+        const hit = RELEASE_TO_COLLECTION_LINE[t];
+        return hit.cat === form.releaseCategory && (!form.collectionLine || hit.line === form.collectionLine);
+      });
+    } else {
+      seedTitles = [...Object.keys(RELEASE_TO_COLLECTION_LINE), ...tourTitles];
+    }
+    const combined = [.../* @__PURE__ */ new Set([...fromCards, ...seedTitles])];
+    const isJpSource = JP_SOURCES.indexOf(form.source) !== -1;
+    if (isJpSource && form.releaseCategory !== "Merch Collection" && form.releaseCategory !== "Concert / Tour") {
+      const isJapanRelease = (t) => RELEASE_TO_COLLECTION_LINE[t] && RELEASE_TO_COLLECTION_LINE[t].line === "Japan Release";
+      const jp = combined.filter(isJapanRelease).sort();
+      const rest = combined.filter((t) => !isJapanRelease(t)).sort();
+      return [...jp, ...rest];
+    }
+    return combined.sort();
+  }, [cards, form.group, form.releaseCategory, form.collectionLine, form.source]);
   const filtered = useMemo(() => {
     if (statsCardFilter) {
       return cards.filter((c) => statsCardFilter.has(c.id));
@@ -1408,6 +1700,8 @@ function PhotocardTracker({ isOwner = true } = {}) {
       if (filterGroup && c.group !== filterGroup) return false;
       if (selectedMemberFilters.size > 0 && !selectedMemberFilters.has(c.member)) return false;
       if (selectedAlbumFilters.size > 0 && !selectedAlbumFilters.has(c.album)) return false;
+      if (selectedReleaseCategoryFilters.size > 0 && !selectedReleaseCategoryFilters.has(c.releaseCategory)) return false;
+      if (selectedCollectionLineFilters.size > 0 && !selectedCollectionLineFilters.has(c.collectionLine)) return false;
       if (selectedCategoryFilters.size > 0 && !selectedCategoryFilters.has(c.category)) return false;
       if (selectedSourceFilters.size > 0 && !selectedSourceFilters.has(c.source)) return false;
       if (selectedStatusFilters.size > 0 && !selectedStatusFilters.has(c.status)) return false;
@@ -1444,7 +1738,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
         else if (searchField === "category") hay = (c.category || "").toLowerCase();
         else if (searchField === "source") hay = (c.source || "").toLowerCase();
         else if (searchField === "notes") hay = (c.notes || "").toLowerCase();
-        else hay = [c.group, c.member, c.album, c.category, c.source, c.itemType, c.productFormat, c.characterSeries, c.character, ...toTags(c.versionDetail), c.notes, ...(c.copies || []).map((cp) => cp.seller)].join(" ").toLowerCase();
+        else hay = [c.group, c.member, c.album, c.releaseCategory, c.collectionLine, c.category, c.source, c.itemType, c.productFormat, c.characterSeries, c.character, ...toTags(c.versionDetail), c.notes, ...(c.copies || []).map((cp) => cp.seller)].join(" ").toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -1488,7 +1782,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
     priceMax,
     purchaseDateFrom,
     purchaseDateTo
-  ].filter(Boolean).length + selectedMemberFilters.size + selectedAlbumFilters.size + selectedCategoryFilters.size + selectedSourceFilters.size + selectedStatusFilters.size + (searchField !== "all" ? 1 : 0);
+  ].filter(Boolean).length + selectedMemberFilters.size + selectedAlbumFilters.size + selectedReleaseCategoryFilters.size + selectedCollectionLineFilters.size + selectedCategoryFilters.size + selectedSourceFilters.size + selectedStatusFilters.size + (searchField !== "all" ? 1 : 0);
   const ownedCount = useMemo(() => cards.filter(isOwned).length, [cards]);
   const totalPhysical = useMemo(() => cards.filter(isOwned).reduce((sum, c) => sum + (c.copies || []).length, 0), [cards]);
   const duplicateCount = Math.max(0, totalPhysical - ownedCount);
@@ -1758,7 +2052,19 @@ function PhotocardTracker({ isOwner = true } = {}) {
     }, 220);
   }
   function handleAlbumChange(v) {
-    setForm((f) => ({ ...f, album: v }));
+    setForm((f) => {
+      const next = { ...f, album: v };
+      const hit = RELEASE_TO_COLLECTION_LINE[v];
+      const tourHit = TOUR_FANMEETING_MAP[v];
+      if (hit) {
+        next.releaseCategory = hit.cat;
+        next.collectionLine = hit.line;
+      } else if (tourHit) {
+        next.releaseCategory = "Concert / Tour";
+        next.collectionLine = tourHit;
+      }
+      return next;
+    });
   }
   function addCopy() {
     setForm((f) => ({ ...f, status: "Owned", copies: [...f.copies, { id: uid(), date: "", price: "", seller: "" }] }));
@@ -1916,6 +2222,8 @@ function PhotocardTracker({ isOwner = true } = {}) {
       if (bulkForm.group) updated.group = bulkForm.group;
       if (bulkForm.member) updated.member = bulkForm.member;
       if (bulkForm.album) updated.album = bulkForm.album;
+      if (bulkForm.releaseCategory) updated.releaseCategory = bulkForm.releaseCategory;
+      if (bulkForm.collectionLine) updated.collectionLine = bulkForm.collectionLine;
       if (bulkForm.itemType) updated.itemType = bulkForm.itemType;
       if (bulkForm.productFormat) updated.productFormat = bulkForm.productFormat;
       if (bulkForm.source) updated.source = bulkForm.source;
@@ -1931,7 +2239,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
     });
     setCards(next);
     setBulkOpen(false);
-    setBulkForm({ group: "", member: "", album: "", itemType: "", productFormat: "", source: "", versionDetail: [], category: "", characterSeries: "", character: "", releaseDate: "", status: "", dateSold: "", notes: "" });
+    setBulkForm({ group: "", member: "", album: "", releaseCategory: "", collectionLine: "", itemType: "", productFormat: "", source: "", versionDetail: [], category: "", characterSeries: "", character: "", releaseDate: "", status: "", dateSold: "", notes: "" });
     setSelectedIds(/* @__PURE__ */ new Set());
     setSelectMode(false);
     const ok = await persist(next);
@@ -1954,11 +2262,13 @@ function PhotocardTracker({ isOwner = true } = {}) {
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   }
   function exportPurchaseLogCsv() {
-    const header = ["Album/Release", "Product/Format", "Version/Edition", "Source", "Seller", "Purchase Date", "Price"];
+    const header = ["Release Category", "Collection/Line", "Album/Release", "Product/Format", "Version/Edition", "Source", "Seller", "Purchase Date", "Price"];
     const rows = [header];
     cards.forEach((c) => {
       (c.copies || []).forEach((copy) => {
         rows.push([
+          c.releaseCategory || "",
+          c.collectionLine || "",
           c.album || "",
           c.productFormat || "",
           toTags(c.versionDetail).join(" \xB7 "),
@@ -2061,6 +2371,8 @@ function PhotocardTracker({ isOwner = true } = {}) {
     setFilterGroup("");
     setSelectedMemberFilters(/* @__PURE__ */ new Set());
     setSelectedAlbumFilters(/* @__PURE__ */ new Set());
+    setSelectedReleaseCategoryFilters(/* @__PURE__ */ new Set());
+    setSelectedCollectionLineFilters(/* @__PURE__ */ new Set());
     setSelectedCategoryFilters(/* @__PURE__ */ new Set());
     setSelectedSourceFilters(/* @__PURE__ */ new Set());
     setSelectedStatusFilters(/* @__PURE__ */ new Set());
@@ -2126,6 +2438,8 @@ function PhotocardTracker({ isOwner = true } = {}) {
       filterGroup,
       selectedMemberFilters: [...selectedMemberFilters],
       selectedAlbumFilters: [...selectedAlbumFilters],
+      selectedReleaseCategoryFilters: [...selectedReleaseCategoryFilters],
+      selectedCollectionLineFilters: [...selectedCollectionLineFilters],
       selectedCategoryFilters: [...selectedCategoryFilters],
       selectedSourceFilters: [...selectedSourceFilters],
       selectedStatusFilters: [...selectedStatusFilters],
@@ -2163,6 +2477,8 @@ function PhotocardTracker({ isOwner = true } = {}) {
     setFilterGroup(s.filterGroup || "");
     setSelectedMemberFilters(new Set(s.selectedMemberFilters || []));
     setSelectedAlbumFilters(new Set(s.selectedAlbumFilters || []));
+    setSelectedReleaseCategoryFilters(new Set(s.selectedReleaseCategoryFilters || []));
+    setSelectedCollectionLineFilters(new Set(s.selectedCollectionLineFilters || []));
     setSelectedCategoryFilters(new Set(s.selectedCategoryFilters || []));
     setSelectedSourceFilters(new Set(s.selectedSourceFilters || []));
     setSelectedStatusFilters(new Set(s.selectedStatusFilters || []));
@@ -2382,6 +2698,14 @@ function PhotocardTracker({ isOwner = true } = {}) {
       toggleSetValue(setSelectedMemberFilters, v);
       setVisibleCount(60);
     } }),
+    /* @__PURE__ */ React.createElement(ChipMultiSelect, { label: "Release Category", options: RELEASE_CATEGORIES, selected: selectedReleaseCategoryFilters, onToggle: (v) => {
+      toggleSetValue(setSelectedReleaseCategoryFilters, v);
+      setVisibleCount(60);
+    } }),
+    /* @__PURE__ */ React.createElement(ChipMultiSelect, { label: "Collection / Line", options: filterCollectionLines, selected: selectedCollectionLineFilters, onToggle: (v) => {
+      toggleSetValue(setSelectedCollectionLineFilters, v);
+      setVisibleCount(60);
+    } }),
     /* @__PURE__ */ React.createElement(ChipMultiSelect, { label: "Release", options: filterAlbums, selected: selectedAlbumFilters, onToggle: (v) => {
       toggleSetValue(setSelectedAlbumFilters, v);
       setVisibleCount(60);
@@ -2546,7 +2870,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
           crop: form.backImageCrop,
           onCropChange: (c) => setForm((f) => ({ ...f, backImageCrop: c }))
         }
-      ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-center", style: { color: theme.muted } }, "Cards without a scan show a placeholder sleeve in the grid.")), /* @__PURE__ */ React.createElement("section", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-3 gap-y-4" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Group", value: form.group, options: groups, placeholder: "New group name", onChange: (v) => setForm((f) => ({ ...f, group: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Member *", value: form.member, options: members, placeholder: "New member name", onChange: (v) => setForm((f) => ({ ...f, member: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Release / Collection *", value: form.album, options: formAlbums, placeholder: "Album / collection name", onChange: handleAlbumChange }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Item Type", value: form.itemType, options: itemTypeOptions, placeholder: "e.g. Photocard", onChange: (v) => setForm((f) => ({ ...f, itemType: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Card Type / Benefit", value: form.category, options: categories, placeholder: "e.g. POB, Lucky Draw", onChange: (v) => setForm((f) => ({ ...f, category: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Product / Format", value: form.productFormat, options: productFormatOptions, placeholder: "e.g. POCAALBUM", onChange: (v) => setForm((f) => ({ ...f, productFormat: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Source / Retailer / Partner", value: form.source, options: sourceOptions, placeholder: "Retailer, platform, partner", onChange: (v) => setForm((f) => ({ ...f, source: v })) }), /* @__PURE__ */ React.createElement(TagMultiSelect, { label: "Version / Edition", values: toTags(form.versionDetail), options: versionDetailOptions, onChange: (v) => setForm((f) => ({ ...f, versionDetail: v })), placeholder: "e.g. 1.0, A, Pink" }), /* @__PURE__ */ React.createElement(Field, { label: "Date released" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: form.releaseDate, onChange: (v) => setForm((f) => ({ ...f, releaseDate: v })) })), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character Series", value: form.characterSeries, options: characterSeriesOptions, placeholder: "Optional", onChange: (v) => setForm((f) => ({ ...f, characterSeries: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character", value: form.character, options: formCharacterOptions, placeholder: "Optional", onChange: (v) => setForm((f) => ({ ...f, character: v })) }), /* @__PURE__ */ React.createElement(Field, { label: "Status" }, /* @__PURE__ */ React.createElement("select", { value: form.status, onChange: (e) => setForm((f) => ({ ...f, status: e.target.value })), className: "w-full px-2.5 py-2 rounded text-sm" }, STATUSES.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.value, value: s.value }, s.value)))), /* @__PURE__ */ React.createElement("div", { className: "sm:col-span-2 xl:col-span-3" }, /* @__PURE__ */ React.createElement(Field, { label: "Notes" }, /* @__PURE__ */ React.createElement("textarea", { value: form.notes, onChange: (e) => setForm((f) => ({ ...f, notes: e.target.value })), rows: 2, placeholder: "Optional notes", className: "w-full px-2.5 py-2 rounded text-sm resize-none" })))), (form.source || toTags(form.versionDetail).length > 0) && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-2", style: { color: theme.muted } }, "Descriptor: ", versionName(form) || "\u2014"), /* @__PURE__ */ React.createElement("div", { className: "mt-5 pt-5", style: { borderTop: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold" }, "Copies of this card"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mt-0.5", style: { color: theme.muted } }, "Each physical copy keeps its own purchase date, price, and seller.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCopy, className: "shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded font-medium", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Plus, { size: 12 }), " ", form.copies.length === 0 ? "Add a copy" : "Add another")), form.copies.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "rounded-xl px-3 py-4 text-xs text-center", style: { color: theme.muted, background: theme.surfaceAlt, border: `1px dashed ${theme.border}` } }, "No physical copies recorded yet.") : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, form.copies.map((copy, idx) => /* @__PURE__ */ React.createElement("div", { key: copy.id, className: "grid grid-cols-1 sm:grid-cols-[1fr_150px_120px_auto] gap-2 items-center p-2.5 rounded-xl", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(SelectOrNew, { value: copy.seller, options: sellerOptions, placeholder: "Seller / source", onChange: (v) => updateCopy(idx, "seller", v), compact: true }), /* @__PURE__ */ React.createElement(FreeformDateInput, { value: copy.date, onChange: (v) => updateCopy(idx, "date", v), compact: true }), /* @__PURE__ */ React.createElement("input", { type: "text", placeholder: "Price", value: copy.price, onChange: (e) => updateCopy(idx, "price", e.target.value), className: "px-2 py-1.5 rounded text-xs" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeCopy(idx), className: "p-1.5 justify-self-end", style: { color: "#A24A3E" }, title: "Remove copy" }, /* @__PURE__ */ React.createElement(X, { size: 14 })))))), /* @__PURE__ */ React.createElement("div", { className: "mt-4" }, /* @__PURE__ */ React.createElement(Field, { label: "Date sold (optional)" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: form.dateSold, onChange: (v) => setForm((f) => ({ ...f, dateSold: v })) }))))),
+      ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-center", style: { color: theme.muted } }, "Cards without a scan show a placeholder sleeve in the grid.")), /* @__PURE__ */ React.createElement("section", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-3 gap-y-4" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Group", value: form.group, options: groups, placeholder: "New group name", onChange: (v) => setForm((f) => ({ ...f, group: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Member *", value: form.member, options: members, placeholder: "New member name", onChange: (v) => setForm((f) => ({ ...f, member: v })) }), /* @__PURE__ */ React.createElement(Field, { label: "Release Category" }, /* @__PURE__ */ React.createElement("select", { value: form.releaseCategory, onChange: (e) => setForm((f) => ({ ...f, releaseCategory: e.target.value, collectionLine: "" })), className: "w-full px-2.5 py-2 rounded text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Optional"), RELEASE_CATEGORIES.map((c) => /* @__PURE__ */ React.createElement("option", { key: c, value: c }, c)))), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Collection / Line", value: form.collectionLine, options: form.releaseCategory ? RELEASE_CATEGORY_LINES[form.releaseCategory] : [], placeholder: form.releaseCategory ? "Auto-fills from Release/Edition below" : "Pick a Release Category first", onChange: (v) => setForm((f) => ({ ...f, collectionLine: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Release / Edition *", value: form.album, options: formAlbums, placeholder: "Album / collection / drop name", onChange: handleAlbumChange }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Item Type", value: form.itemType, options: itemTypeOptions, placeholder: "e.g. Photocard", onChange: (v) => setForm((f) => ({ ...f, itemType: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Card Type / Benefit", value: form.category, options: categories, placeholder: "e.g. POB, Lucky Draw", onChange: (v) => setForm((f) => ({ ...f, category: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Product / Format", value: form.productFormat, options: productFormatOptions, placeholder: "e.g. POCAALBUM", onChange: (v) => setForm((f) => ({ ...f, productFormat: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Source / Retailer / Partner", value: form.source, options: sourceOptions, placeholder: "Retailer, platform, partner", onChange: (v) => setForm((f) => ({ ...f, source: v })) }), /* @__PURE__ */ React.createElement(TagMultiSelect, { label: "Version / Edition", values: toTags(form.versionDetail), options: versionDetailOptions, onChange: (v) => setForm((f) => ({ ...f, versionDetail: v })), placeholder: "e.g. 1.0, A, Pink" }), /* @__PURE__ */ React.createElement(Field, { label: "Date released" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: form.releaseDate, onChange: (v) => setForm((f) => ({ ...f, releaseDate: v })) })), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character Series", value: form.characterSeries, options: characterSeriesOptions, placeholder: "Optional", onChange: (v) => setForm((f) => ({ ...f, characterSeries: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character", value: form.character, options: formCharacterOptions, placeholder: "Optional", onChange: (v) => setForm((f) => ({ ...f, character: v })) }), /* @__PURE__ */ React.createElement(Field, { label: "Status" }, /* @__PURE__ */ React.createElement("select", { value: form.status, onChange: (e) => setForm((f) => ({ ...f, status: e.target.value })), className: "w-full px-2.5 py-2 rounded text-sm" }, STATUSES.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.value, value: s.value }, s.value)))), /* @__PURE__ */ React.createElement("div", { className: "sm:col-span-2 xl:col-span-3" }, /* @__PURE__ */ React.createElement(Field, { label: "Notes" }, /* @__PURE__ */ React.createElement("textarea", { value: form.notes, onChange: (e) => setForm((f) => ({ ...f, notes: e.target.value })), rows: 2, placeholder: "Optional notes", className: "w-full px-2.5 py-2 rounded text-sm resize-none" })))), (form.source || toTags(form.versionDetail).length > 0) && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-2", style: { color: theme.muted } }, "Descriptor: ", versionName(form) || "\u2014"), /* @__PURE__ */ React.createElement("div", { className: "mt-5 pt-5", style: { borderTop: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold" }, "Copies of this card"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mt-0.5", style: { color: theme.muted } }, "Each physical copy keeps its own purchase date, price, and seller.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCopy, className: "shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded font-medium", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Plus, { size: 12 }), " ", form.copies.length === 0 ? "Add a copy" : "Add another")), form.copies.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "rounded-xl px-3 py-4 text-xs text-center", style: { color: theme.muted, background: theme.surfaceAlt, border: `1px dashed ${theme.border}` } }, "No physical copies recorded yet.") : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, form.copies.map((copy, idx) => /* @__PURE__ */ React.createElement("div", { key: copy.id, className: "grid grid-cols-1 sm:grid-cols-[1fr_150px_120px_auto] gap-2 items-center p-2.5 rounded-xl", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(SelectOrNew, { value: copy.seller, options: sellerOptions, placeholder: "Seller / source", onChange: (v) => updateCopy(idx, "seller", v), compact: true }), /* @__PURE__ */ React.createElement(FreeformDateInput, { value: copy.date, onChange: (v) => updateCopy(idx, "date", v), compact: true }), /* @__PURE__ */ React.createElement("input", { type: "text", placeholder: "Price", value: copy.price, onChange: (e) => updateCopy(idx, "price", e.target.value), className: "px-2 py-1.5 rounded text-xs" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeCopy(idx), className: "p-1.5 justify-self-end", style: { color: "#A24A3E" }, title: "Remove copy" }, /* @__PURE__ */ React.createElement(X, { size: 14 })))))), /* @__PURE__ */ React.createElement("div", { className: "mt-4" }, /* @__PURE__ */ React.createElement(Field, { label: "Date sold (optional)" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: form.dateSold, onChange: (v) => setForm((f) => ({ ...f, dateSold: v })) }))))),
       /* @__PURE__ */ React.createElement("div", { className: "px-5 sm:px-7 py-4 flex flex-wrap items-center gap-2 justify-end", style: { borderTop: `1px solid ${theme.border}`, background: theme.surfaceAlt } }, editingId && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => deleteCard(editingId), className: "mr-auto px-3 py-2 rounded text-sm flex items-center gap-1", style: { color: "#A24A3E" } }, /* @__PURE__ */ React.createElement(Trash2, { size: 14 }), " Delete"), !editingId && /* @__PURE__ */ React.createElement("span", { className: "mr-auto text-[11px] hidden sm:inline", style: { color: theme.muted } }, "Ctrl/\u2318 + Enter to save"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeModal, className: "px-4 py-2 rounded text-sm font-medium", style: { border: `1px solid ${theme.border}`, background: theme.surface } }, "Cancel"), !editingId && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveFormAndAddAnother, className: "px-4 py-2 rounded text-sm font-medium", style: { border: `1px solid ${theme.border}`, background: theme.surface } }, "Save and add another"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveForm, className: "px-5 py-2 rounded text-sm font-medium", style: { background: theme.accent, color: theme.bg } }, editingId ? "Save changes" : "Save card"))
     )
   ), selectedCard && !modalMode && (() => {
@@ -2588,9 +2912,9 @@ function PhotocardTracker({ isOwner = true } = {}) {
         },
         badge.label,
         isOwned(selectedCard) && selectedCard.copies && selectedCard.copies.length > 0 ? ` \xB7 ${selectedCard.copies.length}` : ""
-      ))), /* @__PURE__ */ React.createElement("p", { className: "text-sm italic mb-4", style: { color: theme.accent } }, selectedCard.group, selectedCard.album ? ` \xB7 ${selectedCard.album}` : ""), selectedCard.updatedAt && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] -mt-3 mb-4", style: { color: theme.muted } }, "Last edited ", new Date(selectedCard.updatedAt).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })), isOwner && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-4" }, /* @__PURE__ */ React.createElement("button", { onClick: () => openEdit(selectedCard), className: "flex-1 py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1.5", style: { background: theme.accent, color: theme.bg } }, /* @__PURE__ */ React.createElement(Pencil, { size: 12 }), " Edit card"), (selectedCard.status === "Purchased" || selectedCard.status === "Owned") && /* @__PURE__ */ React.createElement("button", { onClick: () => quickAddCopy(selectedCard.id), className: "flex-1 py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1.5", style: { border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Plus, { size: 12 }), " Add copy"), /* @__PURE__ */ React.createElement("button", { onClick: () => deleteCard(selectedCard.id), className: "py-1.5 px-2.5 rounded text-xs flex items-center gap-1.5", style: { color: "#A24A3E", border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Trash2, { size: 12 }))), /* @__PURE__ */ React.createElement("dl", { className: "mb-4" }, /* @__PURE__ */ React.createElement(DetailRow, { label: "Group", value: selectedCard.group }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Item type", value: selectedCard.itemType }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Product / format", value: selectedCard.productFormat }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Version / edition", value: toTags(selectedCard.versionDetail).length > 0 ? toTags(selectedCard.versionDetail).join(" \xB7 ") : "" }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Character", value: selectedCard.character ? selectedCard.characterSeries ? `${selectedCard.character} (${selectedCard.characterSeries})` : selectedCard.character : selectedCard.characterSeries }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Release date", value: formatFlexDate(selectedCard.releaseDate) }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Source", value: selectedCard.source }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Card type", value: selectedCard.category }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Sold", value: formatFlexDate(selectedCard.dateSold) })), (selectedCard.copies || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline justify-between mb-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-semibold pc-font-display" }, "Copies"), spent > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-xs", style: { color: theme.muted, fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace" } }, "\u20B1", formatCurrency(spent), " total")), /* @__PURE__ */ React.createElement("div", null, selectedCard.copies.map((c) => /* @__PURE__ */ React.createElement("div", { key: c.id, className: "flex items-baseline justify-between gap-2 py-2 text-sm", style: { borderBottom: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("span", { className: "truncate" }, c.seller || "Unknown seller"), /* @__PURE__ */ React.createElement("span", { className: "shrink-0", style: { color: theme.muted } }, c.date ? formatFlexDate(c.date) : "no date"), c.price ? /* @__PURE__ */ React.createElement("span", { className: "shrink-0", style: { fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace" } }, "\u20B1", formatCurrency(parsePrice(c.price))) : /* @__PURE__ */ React.createElement("span", { className: "shrink-0" }))))), selectedCard.notes && /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-4", style: { color: theme.muted } }, /* @__PURE__ */ React.createElement("span", { style: { color: theme.text } }, "Notes:"), " ", selectedCard.notes))
+      ))), /* @__PURE__ */ React.createElement("p", { className: "text-sm italic mb-4", style: { color: theme.accent } }, selectedCard.group, selectedCard.album ? ` \xB7 ${selectedCard.album}` : ""), selectedCard.updatedAt && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] -mt-3 mb-4", style: { color: theme.muted } }, "Last edited ", new Date(selectedCard.updatedAt).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })), isOwner && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-4" }, /* @__PURE__ */ React.createElement("button", { onClick: () => openEdit(selectedCard), className: "flex-1 py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1.5", style: { background: theme.accent, color: theme.bg } }, /* @__PURE__ */ React.createElement(Pencil, { size: 12 }), " Edit card"), (selectedCard.status === "Purchased" || selectedCard.status === "Owned") && /* @__PURE__ */ React.createElement("button", { onClick: () => quickAddCopy(selectedCard.id), className: "flex-1 py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1.5", style: { border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Plus, { size: 12 }), " Add copy"), /* @__PURE__ */ React.createElement("button", { onClick: () => deleteCard(selectedCard.id), className: "py-1.5 px-2.5 rounded text-xs flex items-center gap-1.5", style: { color: "#A24A3E", border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Trash2, { size: 12 }))), /* @__PURE__ */ React.createElement("dl", { className: "mb-4" }, /* @__PURE__ */ React.createElement(DetailRow, { label: "Group", value: selectedCard.group }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Release Category", value: selectedCard.releaseCategory }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Collection / Line", value: selectedCard.collectionLine }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Item type", value: selectedCard.itemType }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Product / format", value: selectedCard.productFormat }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Version / edition", value: toTags(selectedCard.versionDetail).length > 0 ? toTags(selectedCard.versionDetail).join(" \xB7 ") : "" }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Character", value: selectedCard.character ? selectedCard.characterSeries ? `${selectedCard.character} (${selectedCard.characterSeries})` : selectedCard.character : selectedCard.characterSeries }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Release date", value: formatFlexDate(selectedCard.releaseDate) }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Source", value: selectedCard.source }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Card type", value: selectedCard.category }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Sold", value: formatFlexDate(selectedCard.dateSold) })), (selectedCard.copies || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline justify-between mb-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-semibold pc-font-display" }, "Copies"), spent > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-xs", style: { color: theme.muted, fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace" } }, "\u20B1", formatCurrency(spent), " total")), /* @__PURE__ */ React.createElement("div", null, selectedCard.copies.map((c) => /* @__PURE__ */ React.createElement("div", { key: c.id, className: "flex items-baseline justify-between gap-2 py-2 text-sm", style: { borderBottom: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("span", { className: "truncate" }, c.seller || "Unknown seller"), /* @__PURE__ */ React.createElement("span", { className: "shrink-0", style: { color: theme.muted } }, c.date ? formatFlexDate(c.date) : "no date"), c.price ? /* @__PURE__ */ React.createElement("span", { className: "shrink-0", style: { fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace" } }, "\u20B1", formatCurrency(parsePrice(c.price))) : /* @__PURE__ */ React.createElement("span", { className: "shrink-0" }))))), selectedCard.notes && /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-4", style: { color: theme.muted } }, /* @__PURE__ */ React.createElement("span", { style: { color: theme.text } }, "Notes:"), " ", selectedCard.notes))
     ));
-  })(), cropCard && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "rgba(0,0,0,0.75)" }, onClick: closeQuickCrop }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-sm rounded-2xl p-5", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Adjust ", cropSide, " crop"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeQuickCrop }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement(ImageCropper, { src: resolveImageUrl(cropSide === "front" ? cropCard.frontImage : cropCard.backImage), crop: cropDraft, onChange: setCropDraft }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-5" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeQuickCrop, className: "flex-1 py-2 rounded-full text-sm font-medium", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveQuickCrop, className: "flex-1 py-2 rounded-full text-sm font-medium", style: { background: theme.accent, color: theme.bg } }, "Save")))), selectMode && selectedIds.size > 0 && /* @__PURE__ */ React.createElement("div", { className: "fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-4 py-2.5 rounded-full shadow-lg", style: { background: theme.surface, border: `1px solid ${theme.border}`, boxShadow: "0 8px 24px rgba(0,0,0,0.12)" } }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-medium pl-1" }, selectedIds.size, " selected"), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5", style: { background: theme.border } }), /* @__PURE__ */ React.createElement("button", { onClick: () => setBulkOpen(true), className: "px-3 py-1.5 rounded-full text-xs font-medium", style: { background: theme.accent, color: theme.bg } }, "Bulk edit"), /* @__PURE__ */ React.createElement("button", { onClick: bulkDelete, className: "px-3 py-1.5 rounded-full text-xs font-medium", style: { color: "#A24A3E", border: `1px solid ${theme.border}` } }, "Delete")), bulkOpen && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "rgba(0,0,0,0.75)" }, onClick: () => setBulkOpen(false) }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-sm rounded-2xl p-5 max-h-[85vh] overflow-y-auto pc-scroll", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Bulk edit ", selectedIds.size, " card", selectedIds.size !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBulkOpen(false) }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-3", style: { color: theme.muted } }, "Leave a field blank to keep each card's existing value there."), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Group", value: bulkForm.group, options: groups, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, group: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Member", value: bulkForm.member, options: allMembers, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, member: v })) })), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Release / Collection", value: bulkForm.album, options: allAlbums, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, album: v })) }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Item Type", value: bulkForm.itemType, options: itemTypeOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, itemType: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Product / Format", value: bulkForm.productFormat, options: productFormatOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, productFormat: v })) })), /* @__PURE__ */ React.createElement(TagMultiSelect, { label: "Version / edition", values: bulkForm.versionDetail, options: versionDetailOptions, onChange: (v) => setBulkForm((f) => ({ ...f, versionDetail: v })), placeholder: "Leave blank to skip" }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Source / Retailer / Partner", value: bulkForm.source, options: sourceOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, source: v })) }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Card Type / Benefit", value: bulkForm.category, options: categories, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, category: v })) }), /* @__PURE__ */ React.createElement(Field, { label: "Date released" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: bulkForm.releaseDate, onChange: (v) => setBulkForm((f) => ({ ...f, releaseDate: v })) }))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character Series", value: bulkForm.characterSeries, options: characterSeriesOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, characterSeries: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character", value: bulkForm.character, options: characterOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, character: v })) })), /* @__PURE__ */ React.createElement(Field, { label: "Status" }, /* @__PURE__ */ React.createElement("select", { value: bulkForm.status, onChange: (e) => setBulkForm((f) => ({ ...f, status: e.target.value })), className: "w-full px-2.5 py-2 rounded-lg text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Leave unchanged"), STATUSES.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.value, value: s.value }, s.value)))), /* @__PURE__ */ React.createElement(Field, { label: "Date sold (optional)" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: bulkForm.dateSold, onChange: (v) => setBulkForm((f) => ({ ...f, dateSold: v })) })), /* @__PURE__ */ React.createElement(Field, { label: "Notes" }, /* @__PURE__ */ React.createElement("textarea", { value: bulkForm.notes, onChange: (e) => setBulkForm((f) => ({ ...f, notes: e.target.value })), rows: 2, placeholder: "Leave blank to skip", className: "w-full px-2.5 py-2 rounded-lg text-sm resize-none" }))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: applyBulkEdit, className: "w-full py-2 rounded-full text-sm font-medium mt-5", style: { background: theme.accent, color: theme.bg } }, "Apply to ", selectedIds.size, " card", selectedIds.size !== 1 ? "s" : ""))), bulkCreateOpen && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "rgba(0,0,0,0.75)" }, onClick: () => setBulkCreateOpen(false) }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-md rounded-2xl p-5 max-h-[85vh] overflow-y-auto pc-scroll", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Bulk create from list"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBulkCreateOpen(false) }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-3", style: { color: theme.muted } }, "Creates new cards from pasted JSON \u2014 no photos, just the details filled in. Add photos to each one afterward."), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg p-3 mb-3", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-2", style: { color: theme.muted } }, "1. Copy this prompt. 2. Paste it into a new Claude chat along with a photo of your template. 3. Paste Claude's reply below."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: copyBulkCreatePrompt, className: "w-full py-1.5 rounded-full text-xs font-medium", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, promptCopied ? "Copied!" : "Copy extraction prompt")), /* @__PURE__ */ React.createElement(Field, { label: "Paste the JSON reply here" }, /* @__PURE__ */ React.createElement(
+  })(), cropCard && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "rgba(0,0,0,0.75)" }, onClick: closeQuickCrop }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-sm rounded-2xl p-5", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Adjust ", cropSide, " crop"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeQuickCrop }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement(ImageCropper, { src: resolveImageUrl(cropSide === "front" ? cropCard.frontImage : cropCard.backImage), crop: cropDraft, onChange: setCropDraft }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-5" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeQuickCrop, className: "flex-1 py-2 rounded-full text-sm font-medium", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveQuickCrop, className: "flex-1 py-2 rounded-full text-sm font-medium", style: { background: theme.accent, color: theme.bg } }, "Save")))), selectMode && selectedIds.size > 0 && /* @__PURE__ */ React.createElement("div", { className: "fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-4 py-2.5 rounded-full shadow-lg", style: { background: theme.surface, border: `1px solid ${theme.border}`, boxShadow: "0 8px 24px rgba(0,0,0,0.12)" } }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-medium pl-1" }, selectedIds.size, " selected"), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5", style: { background: theme.border } }), /* @__PURE__ */ React.createElement("button", { onClick: () => setBulkOpen(true), className: "px-3 py-1.5 rounded-full text-xs font-medium", style: { background: theme.accent, color: theme.bg } }, "Bulk edit"), /* @__PURE__ */ React.createElement("button", { onClick: bulkDelete, className: "px-3 py-1.5 rounded-full text-xs font-medium", style: { color: "#A24A3E", border: `1px solid ${theme.border}` } }, "Delete")), bulkOpen && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "rgba(0,0,0,0.75)" }, onClick: () => setBulkOpen(false) }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-sm rounded-2xl p-5 max-h-[85vh] overflow-y-auto pc-scroll", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Bulk edit ", selectedIds.size, " card", selectedIds.size !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBulkOpen(false) }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-3", style: { color: theme.muted } }, "Leave a field blank to keep each card's existing value there."), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Group", value: bulkForm.group, options: groups, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, group: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Member", value: bulkForm.member, options: allMembers, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, member: v })) })), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Release / Edition", value: bulkForm.album, options: allAlbums, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, album: v })) }), /* @__PURE__ */ React.createElement(Field, { label: "Release Category" }, /* @__PURE__ */ React.createElement("select", { value: bulkForm.releaseCategory, onChange: (e) => setBulkForm((f) => ({ ...f, releaseCategory: e.target.value })), className: "w-full px-2.5 py-2 rounded text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Leave unchanged"), RELEASE_CATEGORIES.map((c) => /* @__PURE__ */ React.createElement("option", { key: c, value: c }, c)))), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Collection / Line", value: bulkForm.collectionLine, options: bulkForm.releaseCategory ? RELEASE_CATEGORY_LINES[bulkForm.releaseCategory] : allCollectionLines, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, collectionLine: v })) }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Item Type", value: bulkForm.itemType, options: itemTypeOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, itemType: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Product / Format", value: bulkForm.productFormat, options: productFormatOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, productFormat: v })) })), /* @__PURE__ */ React.createElement(TagMultiSelect, { label: "Version / edition", values: bulkForm.versionDetail, options: versionDetailOptions, onChange: (v) => setBulkForm((f) => ({ ...f, versionDetail: v })), placeholder: "Leave blank to skip" }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Source / Retailer / Partner", value: bulkForm.source, options: sourceOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, source: v })) }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Card Type / Benefit", value: bulkForm.category, options: categories, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, category: v })) }), /* @__PURE__ */ React.createElement(Field, { label: "Date released" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: bulkForm.releaseDate, onChange: (v) => setBulkForm((f) => ({ ...f, releaseDate: v })) }))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character Series", value: bulkForm.characterSeries, options: characterSeriesOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, characterSeries: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character", value: bulkForm.character, options: characterOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, character: v })) })), /* @__PURE__ */ React.createElement(Field, { label: "Status" }, /* @__PURE__ */ React.createElement("select", { value: bulkForm.status, onChange: (e) => setBulkForm((f) => ({ ...f, status: e.target.value })), className: "w-full px-2.5 py-2 rounded-lg text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Leave unchanged"), STATUSES.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.value, value: s.value }, s.value)))), /* @__PURE__ */ React.createElement(Field, { label: "Date sold (optional)" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: bulkForm.dateSold, onChange: (v) => setBulkForm((f) => ({ ...f, dateSold: v })) })), /* @__PURE__ */ React.createElement(Field, { label: "Notes" }, /* @__PURE__ */ React.createElement("textarea", { value: bulkForm.notes, onChange: (e) => setBulkForm((f) => ({ ...f, notes: e.target.value })), rows: 2, placeholder: "Leave blank to skip", className: "w-full px-2.5 py-2 rounded-lg text-sm resize-none" }))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: applyBulkEdit, className: "w-full py-2 rounded-full text-sm font-medium mt-5", style: { background: theme.accent, color: theme.bg } }, "Apply to ", selectedIds.size, " card", selectedIds.size !== 1 ? "s" : ""))), bulkCreateOpen && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "rgba(0,0,0,0.75)" }, onClick: () => setBulkCreateOpen(false) }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-md rounded-2xl p-5 max-h-[85vh] overflow-y-auto pc-scroll", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Bulk create from list"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBulkCreateOpen(false) }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-3", style: { color: theme.muted } }, "Creates new cards from pasted JSON \u2014 no photos, just the details filled in. Add photos to each one afterward."), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg p-3 mb-3", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-2", style: { color: theme.muted } }, "1. Copy this prompt. 2. Paste it into a new Claude chat along with a photo of your template. 3. Paste Claude's reply below."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: copyBulkCreatePrompt, className: "w-full py-1.5 rounded-full text-xs font-medium", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, promptCopied ? "Copied!" : "Copy extraction prompt")), /* @__PURE__ */ React.createElement(Field, { label: "Paste the JSON reply here" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: bulkCreateText,
@@ -2624,7 +2948,17 @@ function PhotocardTracker({ isOwner = true } = {}) {
       },
       /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Manage values"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeManage }, /* @__PURE__ */ React.createElement(X, { size: 18 }))),
       /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-4", style: { color: theme.muted } }, "Tap a section to open it. Rename fixes it everywhere at once (merges it if the new name already exists). Delete clears it from every card that has it."),
-      /* @__PURE__ */ React.createElement(ValueManagerSection, { title: "Release / Collection", usage: albumUsage, onRename: (o, n) => renameFieldValue("album", o, n), onDelete: (v) => deleteFieldValue("album", v) }),
+      /* @__PURE__ */ React.createElement("div", { className: "mb-5 p-3 rounded-lg", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-medium mb-1" }, "Categorize into Release Category / Collection Line"), /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-3", style: { color: theme.muted } }, "One-time: backfills Release Category and Collection Line on existing cards from their Release/Edition, and adds the new seed values to Source/Card Type/Item Type/Product Format. Safe to run more than once \u2014 already-categorized cards are left alone."), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: runTaxonomyMigration,
+          disabled: migrationRunning,
+          className: "px-3 py-1.5 rounded text-xs font-medium",
+          style: { background: theme.accent, color: theme.bg, opacity: migrationRunning ? 0.6 : 1 }
+        },
+        migrationRunning ? "Running\u2026" : "Run categorization"
+      ), migrationResult && /* @__PURE__ */ React.createElement("div", { className: "mt-3 text-xs space-y-1" }, !migrationResult.ok && /* @__PURE__ */ React.createElement("p", { style: { color: "#A24A3E" } }, "Save failed \u2014 try again before closing this tab."), /* @__PURE__ */ React.createElement("p", null, migrationResult.categorized, " card", migrationResult.categorized !== 1 ? "s" : "", " categorized automatically."), migrationResult.ambiguousFlagged > 0 && /* @__PURE__ */ React.createElement("p", { style: { color: theme.muted } }, migrationResult.ambiguousFlagged, " of those share a title with a JP release (Limitless / NOT OKAY / Birthday / Ashes to Light) \u2014 categorized as the KR-side default; double-check any that are actually the Japan pressing."), migrationResult.digipakFixed > 0 && /* @__PURE__ */ React.createElement("p", null, migrationResult.digipakFixed, " card", migrationResult.digipakFixed !== 1 ? "s" : "", ' had "Digipak" standardized to "Digipack".'), migrationResult.needsReview > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: { color: theme.muted } }, migrationResult.needsReview, " card", migrationResult.needsReview !== 1 ? "s" : "", " need manual categorization \u2014 Release/Edition wasn't in the seed list:"), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 ml-4 list-disc", style: { color: theme.muted } }, migrationResult.reviewList.map((a) => /* @__PURE__ */ React.createElement("li", { key: a }, a)))), migrationResult.categorized === 0 && migrationResult.needsReview === 0 && /* @__PURE__ */ React.createElement("p", { style: { color: theme.muted } }, "No cards needed categorizing."))),
+      /* @__PURE__ */ React.createElement(ValueManagerSection, { title: "Release / Edition", usage: albumUsage, onRename: (o, n) => renameFieldValue("album", o, n), onDelete: (v) => deleteFieldValue("album", v) }),
       /* @__PURE__ */ React.createElement(ValueManagerSection, { title: "Item Type", usage: itemTypeUsage, onRename: (o, n) => renameFieldValue("itemType", o, n), onDelete: (v) => deleteFieldValue("itemType", v) }),
       /* @__PURE__ */ React.createElement(ValueManagerSection, { title: "Product / Format", usage: productFormatUsage, onRename: (o, n) => renameFieldValue("productFormat", o, n), onDelete: (v) => deleteFieldValue("productFormat", v) }),
       /* @__PURE__ */ React.createElement(ValueManagerSection, { title: "Version / edition", usage: versionTagUsage, onRename: (o, n) => renameFieldValue("versionDetail", o, n), onDelete: (v) => deleteFieldValue("versionDetail", v) }),
