@@ -1181,7 +1181,7 @@ function ValueManagerSection({ title, usage, onRename, onDelete }) {
 }
 function DetailRow({ label, value, mono }) {
   if (!value) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "py-2", style: { borderBottom: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("dt", { className: "pc-label text-[10px]", style: { color: theme.muted } }, label), /* @__PURE__ */ React.createElement("dd", { className: "text-sm text-right mt-1", style: { fontFamily: mono ? "ui-monospace, 'SF Mono', Menlo, monospace" : void 0 } }, value));
+  return /* @__PURE__ */ React.createElement("div", { className: "py-1.5", style: { borderBottom: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("dt", { className: "pc-label text-xs", style: { color: theme.muted } }, label), /* @__PURE__ */ React.createElement("dd", { className: "text-xs text-right mt-0.5", style: { fontFamily: mono ? "ui-monospace, 'SF Mono', Menlo, monospace" : void 0 } }, value));
 }
 function CappedList({ items, initialCount = 6, renderRow }) {
   const [expanded, setExpanded] = useState(false);
