@@ -794,6 +794,9 @@ function cardBadge(card) {
   const s = STATUSES.find((s2) => s2.value === card.status);
   return { label: card.status, color: s ? s.color : theme.muted };
 }
+function CopyIcon({ size = 12 }) {
+  return /* @__PURE__ */ React.createElement("svg", { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("rect", { x: "9", y: "9", width: "13", height: "13", rx: "2", ry: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" }));
+}
 function Field({ label, children }) {
   return /* @__PURE__ */ React.createElement("label", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "pc-label block text-[10px] mb-1", style: { color: theme.muted } }, label), children);
 }
@@ -1254,6 +1257,11 @@ function PhotocardTracker({ isOwner = true } = {}) {
   const [selectedIds, setSelectedIds] = useState(() => /* @__PURE__ */ new Set());
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkForm, setBulkForm] = useState({ group: "", member: "", album: "", releaseCategory: "", collectionLine: "", itemType: "", productFormat: "", source: "", versionDetail: [], category: "", characterSeries: "", character: "", releaseDate: "", status: "", dateSold: "", notes: "" });
+  const [dupCard, setDupCard] = useState(null);
+  const [dupMembers, setDupMembers] = useState(() => /* @__PURE__ */ new Set());
+  const [dupExtra, setDupExtra] = useState([]);
+  const [dupExtraInput, setDupExtraInput] = useState("");
+  const [dupStatus, setDupStatus] = useState("Wishlist");
   const [bulkCreateOpen, setBulkCreateOpen] = useState(false);
   const [bulkCreateText, setBulkCreateText] = useState("");
   const [bulkCreateError, setBulkCreateError] = useState("");
@@ -2027,6 +2035,98 @@ function PhotocardTracker({ isOwner = true } = {}) {
     goHome();
     setFilterOwned("owned");
     setVisibleCount(60);
+  }
+  function cardSignature(c) {
+    return [
+      normVal(c.group),
+      normVal(c.member),
+      normVal(c.album),
+      normVal(c.itemType),
+      normVal(c.productFormat),
+      normVal(c.category),
+      toTags(c.versionDetail).map(normVal).sort().join("+")
+    ].join("::");
+  }
+  function computeDupCandidates(card, extras) {
+    if (!card) return [];
+    const isAteez = normVal(card.group) === "ateez";
+    const order = isAteez ? ATEEZ_MEMBER_ORDER : [];
+    const known = cards.filter((c) => c.group === card.group).map((c) => c.member).filter(Boolean);
+    const rest = [.../* @__PURE__ */ new Set([...known, ...extras])].filter((m) => !order.includes(m)).sort();
+    const names = [...order, ...rest].filter((m) => normVal(m) !== normVal(card.member));
+    const existing = new Set(cards.map(cardSignature));
+    return names.map((m) => ({ member: m, exists: existing.has(cardSignature({ ...card, member: m })) }));
+  }
+  function openDuplicate(card) {
+    const cands = computeDupCandidates(card, []);
+    setDupCard(card);
+    setDupExtra([]);
+    setDupExtraInput("");
+    setDupStatus("Wishlist");
+    setDupMembers(new Set(cands.filter((c) => !c.exists).map((c) => c.member)));
+    setSelectedCard(null);
+  }
+  function toggleDupMember(m) {
+    setDupMembers((prev) => {
+      const next = new Set(prev);
+      if (next.has(m)) next.delete(m);
+      else next.add(m);
+      return next;
+    });
+  }
+  function addDupExtra() {
+    const name = dupExtraInput.trim();
+    if (!name || !dupCard) return;
+    const already = computeDupCandidates(dupCard, dupExtra).some((c) => normVal(c.member) === normVal(name));
+    if (already || normVal(name) === normVal(dupCard.member)) {
+      setDupExtraInput("");
+      return;
+    }
+    setDupExtra((prev) => [...prev, name]);
+    setDupMembers((prev) => /* @__PURE__ */ new Set([...prev, name]));
+    setDupExtraInput("");
+  }
+  async function createDuplicates() {
+    if (!dupCard) return;
+    const targets = computeDupCandidates(dupCard, dupExtra).filter((c) => !c.exists && dupMembers.has(c.member)).map((c) => c.member);
+    if (targets.length === 0) return;
+    const now = Date.now();
+    const isAteez = normVal(dupCard.group) === "ateez";
+    const roster = CHARACTER_MAP[dupCard.characterSeries];
+    const newCards = targets.map((m, i) => {
+      const idx = ATEEZ_MEMBER_ORDER.indexOf(m);
+      return {
+        ...emptyForm,
+        group: dupCard.group,
+        member: m,
+        album: dupCard.album,
+        releaseCategory: dupCard.releaseCategory || "",
+        collectionLine: dupCard.collectionLine || "",
+        itemType: dupCard.itemType || "",
+        productFormat: dupCard.productFormat || "",
+        category: dupCard.category || "",
+        releaseDate: dupCard.releaseDate || "",
+        source: dupCard.source || "",
+        versionDetail: [...toTags(dupCard.versionDetail)],
+        // Characters belong to a specific member, so give each new card its own rather than copying Mingi's.
+        characterSeries: dupCard.characterSeries || "",
+        character: roster && isAteez && idx >= 0 ? roster[idx] : "",
+        status: dupStatus,
+        copies: [],
+        id: uid(),
+        // Newest-first sort: give the first member the latest timestamp so they land in roster order.
+        createdAt: now + (targets.length - 1 - i),
+        updatedAt: now
+      };
+    });
+    const next = [...cards, ...newCards];
+    setCards(next);
+    setDupCard(null);
+    const ok = await persist(next);
+    if (ok) {
+      setToast(`Created ${newCards.length} card${newCards.length !== 1 ? "s" : ""} as ${dupStatus}.`);
+      setTimeout(() => setToast(""), 3500);
+    }
   }
   function showStatCards(ids) {
     setStatsCardFilter(new Set(ids));
@@ -2920,7 +3020,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
         },
         badge.label,
         isOwned(selectedCard) && selectedCard.copies && selectedCard.copies.length > 0 ? ` \xB7 ${selectedCard.copies.length}` : ""
-      ))), /* @__PURE__ */ React.createElement("p", { className: "text-sm italic mb-4", style: { color: theme.accent } }, selectedCard.group, selectedCard.album ? ` \xB7 ${selectedCard.album}` : ""), selectedCard.updatedAt && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] -mt-3 mb-4", style: { color: theme.muted } }, "Last edited ", new Date(selectedCard.updatedAt).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })), isOwner && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-4" }, /* @__PURE__ */ React.createElement("button", { onClick: () => openEdit(selectedCard), className: "flex-1 py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1.5", style: { background: theme.accent, color: theme.bg } }, /* @__PURE__ */ React.createElement(Pencil, { size: 12 }), " Edit card"), (selectedCard.status === "Purchased" || selectedCard.status === "Owned") && /* @__PURE__ */ React.createElement("button", { onClick: () => quickAddCopy(selectedCard.id), className: "flex-1 py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1.5", style: { border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Plus, { size: 12 }), " Add copy"), /* @__PURE__ */ React.createElement("button", { onClick: () => deleteCard(selectedCard.id), className: "py-1.5 px-2.5 rounded text-xs flex items-center gap-1.5", style: { color: "#A24A3E", border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Trash2, { size: 12 }))), /* @__PURE__ */ React.createElement("dl", { className: "mb-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4" }, /* @__PURE__ */ React.createElement(DetailRow, { label: "Group", value: selectedCard.group }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Release Cat.", value: selectedCard.releaseCategory }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Collection / Line", value: selectedCard.collectionLine }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Item type", value: selectedCard.itemType }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Product", value: selectedCard.productFormat }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Version", value: toTags(selectedCard.versionDetail).length > 0 ? toTags(selectedCard.versionDetail).join(" \xB7 ") : "" }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Character", value: selectedCard.character ? selectedCard.characterSeries ? `${selectedCard.character} (${selectedCard.characterSeries})` : selectedCard.character : selectedCard.characterSeries }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Release date", value: formatFlexDate(selectedCard.releaseDate) }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Source", value: selectedCard.source }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Card type", value: selectedCard.category }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Sold", value: formatFlexDate(selectedCard.dateSold) })), (selectedCard.copies || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline justify-between mb-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-semibold pc-font-display" }, "Copies"), spent > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-xs", style: { color: theme.muted, fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace" } }, "\u20B1", formatCurrency(spent), " total")), /* @__PURE__ */ React.createElement("div", null, selectedCard.copies.map((c) => /* @__PURE__ */ React.createElement("div", { key: c.id, className: "flex items-baseline justify-between gap-2 py-2 text-sm", style: { borderBottom: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("span", { className: "truncate" }, c.seller || "Unknown seller"), /* @__PURE__ */ React.createElement("span", { className: "shrink-0", style: { color: theme.muted } }, c.date ? formatFlexDate(c.date) : "no date"), c.price ? /* @__PURE__ */ React.createElement("span", { className: "shrink-0", style: { fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace" } }, "\u20B1", formatCurrency(parsePrice(c.price))) : /* @__PURE__ */ React.createElement("span", { className: "shrink-0" }))))), selectedCard.notes && /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-4", style: { color: theme.muted } }, /* @__PURE__ */ React.createElement("span", { style: { color: theme.text } }, "Notes:"), " ", selectedCard.notes))
+      ))), /* @__PURE__ */ React.createElement("p", { className: "text-sm italic mb-4", style: { color: theme.accent } }, selectedCard.group, selectedCard.album ? ` \xB7 ${selectedCard.album}` : ""), selectedCard.updatedAt && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] -mt-3 mb-4", style: { color: theme.muted } }, "Last edited ", new Date(selectedCard.updatedAt).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })), isOwner && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-4" }, /* @__PURE__ */ React.createElement("button", { onClick: () => openEdit(selectedCard), className: "flex-1 py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1.5", style: { background: theme.accent, color: theme.bg } }, /* @__PURE__ */ React.createElement(Pencil, { size: 12 }), " Edit card"), (selectedCard.status === "Purchased" || selectedCard.status === "Owned") && /* @__PURE__ */ React.createElement("button", { onClick: () => quickAddCopy(selectedCard.id), className: "flex-1 py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1.5", style: { border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Plus, { size: 12 }), " Add copy"), /* @__PURE__ */ React.createElement("button", { onClick: () => openDuplicate(selectedCard), title: "Create this card for other members", className: "flex-1 py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1.5", style: { border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(CopyIcon, { size: 12 }), " Duplicate"), /* @__PURE__ */ React.createElement("button", { onClick: () => deleteCard(selectedCard.id), className: "py-1.5 px-2.5 rounded text-xs flex items-center gap-1.5", style: { color: "#A24A3E", border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Trash2, { size: 12 }))), /* @__PURE__ */ React.createElement("dl", { className: "mb-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4" }, /* @__PURE__ */ React.createElement(DetailRow, { label: "Group", value: selectedCard.group }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Release Cat.", value: selectedCard.releaseCategory }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Collection / Line", value: selectedCard.collectionLine }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Item type", value: selectedCard.itemType }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Product", value: selectedCard.productFormat }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Version", value: toTags(selectedCard.versionDetail).length > 0 ? toTags(selectedCard.versionDetail).join(" \xB7 ") : "" }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Character", value: selectedCard.character ? selectedCard.characterSeries ? `${selectedCard.character} (${selectedCard.characterSeries})` : selectedCard.character : selectedCard.characterSeries }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Release date", value: formatFlexDate(selectedCard.releaseDate) }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Source", value: selectedCard.source }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Card type", value: selectedCard.category }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Sold", value: formatFlexDate(selectedCard.dateSold) })), (selectedCard.copies || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline justify-between mb-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-semibold pc-font-display" }, "Copies"), spent > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-xs", style: { color: theme.muted, fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace" } }, "\u20B1", formatCurrency(spent), " total")), /* @__PURE__ */ React.createElement("div", null, selectedCard.copies.map((c) => /* @__PURE__ */ React.createElement("div", { key: c.id, className: "flex items-baseline justify-between gap-2 py-2 text-sm", style: { borderBottom: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("span", { className: "truncate" }, c.seller || "Unknown seller"), /* @__PURE__ */ React.createElement("span", { className: "shrink-0", style: { color: theme.muted } }, c.date ? formatFlexDate(c.date) : "no date"), c.price ? /* @__PURE__ */ React.createElement("span", { className: "shrink-0", style: { fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace" } }, "\u20B1", formatCurrency(parsePrice(c.price))) : /* @__PURE__ */ React.createElement("span", { className: "shrink-0" }))))), selectedCard.notes && /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-4", style: { color: theme.muted } }, /* @__PURE__ */ React.createElement("span", { style: { color: theme.text } }, "Notes:"), " ", selectedCard.notes))
     ));
   })(), cropCard && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "rgba(0,0,0,0.75)" }, onClick: closeQuickCrop }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-sm rounded-2xl p-5", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Adjust ", cropSide, " crop"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeQuickCrop }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement(ImageCropper, { src: resolveImageUrl(cropSide === "front" ? cropCard.frontImage : cropCard.backImage), crop: cropDraft, onChange: setCropDraft }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-5" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeQuickCrop, className: "flex-1 py-2 rounded-full text-sm font-medium", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveQuickCrop, className: "flex-1 py-2 rounded-full text-sm font-medium", style: { background: theme.accent, color: theme.bg } }, "Save")))), selectMode && selectedIds.size > 0 && /* @__PURE__ */ React.createElement("div", { className: "fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-4 py-2.5 rounded-full shadow-lg", style: { background: theme.surface, border: `1px solid ${theme.border}`, boxShadow: "0 8px 24px rgba(0,0,0,0.12)" } }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-medium pl-1" }, selectedIds.size, " selected"), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5", style: { background: theme.border } }), /* @__PURE__ */ React.createElement("button", { onClick: () => setBulkOpen(true), className: "px-3 py-1.5 rounded-full text-xs font-medium", style: { background: theme.accent, color: theme.bg } }, "Bulk edit"), /* @__PURE__ */ React.createElement("button", { onClick: bulkDelete, className: "px-3 py-1.5 rounded-full text-xs font-medium", style: { color: "#A24A3E", border: `1px solid ${theme.border}` } }, "Delete")), bulkOpen && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "rgba(0,0,0,0.75)" }, onClick: () => setBulkOpen(false) }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-sm rounded-2xl p-5 max-h-[85vh] overflow-y-auto pc-scroll", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Bulk edit ", selectedIds.size, " card", selectedIds.size !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBulkOpen(false) }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-3", style: { color: theme.muted } }, "Leave a field blank to keep each card's existing value there."), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Group", value: bulkForm.group, options: groups, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, group: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Member", value: bulkForm.member, options: allMembers, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, member: v })) })), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Release / Edition", value: bulkForm.album, options: allAlbums, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, album: v })) }), /* @__PURE__ */ React.createElement(Field, { label: "Release Category" }, /* @__PURE__ */ React.createElement("select", { value: bulkForm.releaseCategory, onChange: (e) => setBulkForm((f) => ({ ...f, releaseCategory: e.target.value })), className: "w-full px-2.5 py-2 rounded text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Leave unchanged"), RELEASE_CATEGORIES.map((c) => /* @__PURE__ */ React.createElement("option", { key: c, value: c }, c)))), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Collection / Line", value: bulkForm.collectionLine, options: bulkForm.releaseCategory ? RELEASE_CATEGORY_LINES[bulkForm.releaseCategory] : allCollectionLines, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, collectionLine: v })) }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Item Type", value: bulkForm.itemType, options: itemTypeOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, itemType: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Product / Format", value: bulkForm.productFormat, options: productFormatOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, productFormat: v })) })), /* @__PURE__ */ React.createElement(TagMultiSelect, { label: "Version / edition", values: bulkForm.versionDetail, options: versionDetailOptions, onChange: (v) => setBulkForm((f) => ({ ...f, versionDetail: v })), placeholder: "Leave blank to skip" }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Source / Retailer / Partner", value: bulkForm.source, options: sourceOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, source: v })) }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Card Type / Benefit", value: bulkForm.category, options: categories, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, category: v })) }), /* @__PURE__ */ React.createElement(Field, { label: "Date released" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: bulkForm.releaseDate, onChange: (v) => setBulkForm((f) => ({ ...f, releaseDate: v })) }))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character Series", value: bulkForm.characterSeries, options: characterSeriesOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, characterSeries: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character", value: bulkForm.character, options: characterOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, character: v })) })), /* @__PURE__ */ React.createElement(Field, { label: "Status" }, /* @__PURE__ */ React.createElement("select", { value: bulkForm.status, onChange: (e) => setBulkForm((f) => ({ ...f, status: e.target.value })), className: "w-full px-2.5 py-2 rounded-lg text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Leave unchanged"), STATUSES.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.value, value: s.value }, s.value)))), /* @__PURE__ */ React.createElement(Field, { label: "Date sold (optional)" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: bulkForm.dateSold, onChange: (v) => setBulkForm((f) => ({ ...f, dateSold: v })) })), /* @__PURE__ */ React.createElement(Field, { label: "Notes" }, /* @__PURE__ */ React.createElement("textarea", { value: bulkForm.notes, onChange: (e) => setBulkForm((f) => ({ ...f, notes: e.target.value })), rows: 2, placeholder: "Leave blank to skip", className: "w-full px-2.5 py-2 rounded-lg text-sm resize-none" }))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: applyBulkEdit, className: "w-full py-2 rounded-full text-sm font-medium mt-5", style: { background: theme.accent, color: theme.bg } }, "Apply to ", selectedIds.size, " card", selectedIds.size !== 1 ? "s" : ""))), bulkCreateOpen && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "rgba(0,0,0,0.75)" }, onClick: () => setBulkCreateOpen(false) }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-md rounded-2xl p-5 max-h-[85vh] overflow-y-auto pc-scroll", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Bulk create from list"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBulkCreateOpen(false) }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-3", style: { color: theme.muted } }, "Creates new cards from pasted JSON \u2014 no photos, just the details filled in. Add photos to each one afterward."), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg p-3 mb-3", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-2", style: { color: theme.muted } }, "1. Copy this prompt. 2. Paste it into a new Claude chat along with a photo of your template. 3. Paste Claude's reply below."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: copyBulkCreatePrompt, className: "w-full py-1.5 rounded-full text-xs font-medium", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, promptCopied ? "Copied!" : "Copy extraction prompt")), /* @__PURE__ */ React.createElement(Field, { label: "Paste the JSON reply here" }, /* @__PURE__ */ React.createElement(
     "textarea",
@@ -2935,7 +3035,63 @@ function PhotocardTracker({ isOwner = true } = {}) {
       className: "w-full px-2.5 py-2 rounded-lg text-xs resize-none",
       style: { fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace" }
     }
-  )), bulkCreateError && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1.5", style: { color: "#A24A3E" } }, bulkCreateError), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: createBulkCards, disabled: !bulkCreateText.trim(), className: "w-full py-2 rounded-full text-sm font-medium mt-4 disabled:opacity-40", style: { background: theme.accent, color: theme.bg } }, "Create cards"))), manageOpen && /* @__PURE__ */ React.createElement(
+  )), bulkCreateError && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1.5", style: { color: "#A24A3E" } }, bulkCreateError), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: createBulkCards, disabled: !bulkCreateText.trim(), className: "w-full py-2 rounded-full text-sm font-medium mt-4 disabled:opacity-40", style: { background: theme.accent, color: theme.bg } }, "Create cards"))), dupCard && (() => {
+    const cands = computeDupCandidates(dupCard, dupExtra);
+    const available = cands.filter((c) => !c.exists);
+    const pickedCount = available.filter((c) => dupMembers.has(c.member)).length;
+    const allPicked = available.length > 0 && pickedCount === available.length;
+    const summary = [dupCard.album, toTags(dupCard.versionDetail).join(" \xB7 "), dupCard.source].filter(Boolean).join(" \xB7 ");
+    return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4", style: { background: "rgba(0,0,0,0.6)" }, onClick: () => setDupCard(null) }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-md max-h-[90vh] overflow-y-auto pc-scroll rounded-t-xl sm:rounded-xl p-5", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-1" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-xl", style: { fontWeight: 600 } }, "Duplicate for other members"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setDupCard(null), className: "w-7 h-7 flex items-center justify-center shrink-0", style: { background: "transparent", border: "none", color: theme.muted } }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-4", style: { color: theme.muted } }, "Makes the same card for each member you pick", summary ? `: ${summary}` : "", ". Photos, purchase copies and notes aren't copied."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "pc-label text-[10px]", style: { color: theme.muted } }, "Members"), available.length > 0 && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "text-[11px] underline",
+        style: { color: theme.muted },
+        onClick: () => setDupMembers(allPicked ? /* @__PURE__ */ new Set() : new Set(available.map((c) => c.member)))
+      },
+      allPicked ? "Select none" : "Select all"
+    )), cands.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-2", style: { color: theme.muted } }, "No other members found for this group yet \u2014 add one below.") : /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" }, cands.map((c) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: c.member,
+        type: "button",
+        disabled: c.exists,
+        onClick: () => toggleDupMember(c.member),
+        title: c.exists ? "This card already exists for this member" : "",
+        className: "px-2.5 py-1 rounded text-[11px] font-medium",
+        style: c.exists ? { background: "transparent", color: theme.muted, border: `1px dashed ${theme.border}`, opacity: 0.6, cursor: "default" } : chip(dupMembers.has(c.member))
+      },
+      c.member,
+      c.exists ? " \xB7 already added" : ""
+    ))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-5" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        value: dupExtraInput,
+        onChange: (e) => setDupExtraInput(e.target.value),
+        onKeyDown: (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            addDupExtra();
+          }
+        },
+        placeholder: "Add another member\u2026",
+        className: "flex-1 px-2.5 py-1.5 rounded text-sm"
+      }
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addDupExtra, className: "px-3 py-1.5 rounded text-xs font-medium", style: chip(false) }, "Add")), /* @__PURE__ */ React.createElement("span", { className: "pc-label text-[10px] block mb-2", style: { color: theme.muted } }, "Create them as"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1.5 mb-5" }, ["Wishlist", "Unowned"].map((st) => /* @__PURE__ */ React.createElement("button", { key: st, type: "button", onClick: () => setDupStatus(st), className: "px-3 py-1 rounded text-[11px] font-medium", style: chip(dupStatus === st) }, st))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setDupCard(null), className: "px-4 py-2 rounded text-sm font-medium", style: { border: `1px solid ${theme.border}`, background: theme.surface } }, "Cancel"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: createDuplicates,
+        disabled: pickedCount === 0,
+        className: "px-5 py-2 rounded text-sm font-medium",
+        style: { background: theme.accent, color: theme.bg, opacity: pickedCount === 0 ? 0.45 : 1 }
+      },
+      "Create ",
+      pickedCount,
+      " card",
+      pickedCount !== 1 ? "s" : ""
+    ))));
+  })(), manageOpen && /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "fixed inset-0 z-50",
