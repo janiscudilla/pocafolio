@@ -2021,6 +2021,11 @@ function PhotocardTracker({ isOwner = true } = {}) {
     setManageOpen(false);
     clearFilters();
   }
+  function goBinder() {
+    goHome();
+    setFilterOwned("owned");
+    setVisibleCount(60);
+  }
   function showStatCards(ids) {
     setStatsCardFilter(new Set(ids));
     setView("main");
@@ -2620,8 +2625,9 @@ function PhotocardTracker({ isOwner = true } = {}) {
     "button",
     {
       type: "button",
-      onClick: goHome,
+      onClick: goBinder,
       className: "pc-label text-[11px] font-semibold",
+      title: "Everything you own or have purchased",
       style: { color: view === "main" ? theme.text : theme.muted, background: "transparent", border: "none", borderBottom: view === "main" ? `1.5px solid ${theme.text}` : "1.5px solid transparent", paddingBottom: 3, cursor: "pointer" }
     },
     "Binder"
