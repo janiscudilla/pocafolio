@@ -2020,6 +2020,8 @@ function PhotocardTracker({ isOwner = true } = {}) {
     setSelectedIds(/* @__PURE__ */ new Set());
     setManageOpen(false);
     clearFilters();
+    setFilterOwned("");
+    setVisibleCount(60);
   }
   function goBinder() {
     goHome();
