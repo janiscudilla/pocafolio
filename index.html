@@ -505,6 +505,7 @@ const emptyForm = {
   releaseDate: "",
   releaseCategory: "",
   collectionLine: "",
+  coMembers: [],
   source: "",
   versionDetail: [],
   characterSeries: "",
@@ -541,6 +542,20 @@ function toTags(v) {
 }
 function normVal(v) {
   return (v || "").toString().trim().toLowerCase().replace(/\s+/g, " ");
+}
+function cardMembers(card) {
+  const out = [];
+  [card.member, ...toTags(card.coMembers)].forEach((m) => {
+    const t = (m || "").toString().trim();
+    if (t && !out.some((x) => normVal(x) === normVal(t))) out.push(t);
+  });
+  return out;
+}
+function memberLabel(card) {
+  return cardMembers(card).join(" & ");
+}
+function allMembersOf(list) {
+  return list.reduce((acc, c) => acc.concat(cardMembers(c)), []);
 }
 const CROP_RATIO = 85 / 55;
 function defaultCropFor(natW, natH) {
@@ -1456,10 +1471,10 @@ function PhotocardTracker({ isOwner = true } = {}) {
     });
   }
   const groups = useMemo(() => [...new Set(cards.map((c) => c.group).filter(Boolean))].sort(), [cards]);
-  const filterMembers = useMemo(() => [...new Set(cards.filter((c) => !filterGroup || c.group === filterGroup).map((c) => c.member).filter(Boolean))].sort(), [cards, filterGroup]);
+  const filterMembers = useMemo(() => [...new Set(allMembersOf(cards.filter((c) => !filterGroup || c.group === filterGroup)))].sort(), [cards, filterGroup]);
   const filterAlbums = useMemo(() => [...new Set(cards.filter((c) => !filterGroup || c.group === filterGroup).map((c) => c.album).filter(Boolean))].sort(), [cards, filterGroup]);
   const filterCollectionLines = useMemo(() => [...new Set(cards.filter((c) => selectedReleaseCategoryFilters.size === 0 || selectedReleaseCategoryFilters.has(c.releaseCategory)).map((c) => c.collectionLine).filter(Boolean))].sort(), [cards, selectedReleaseCategoryFilters]);
-  const allMembers = useMemo(() => [...new Set(cards.map((c) => c.member).filter(Boolean))].sort(), [cards]);
+  const allMembers = useMemo(() => [...new Set(allMembersOf(cards))].sort(), [cards]);
   const allAlbums = useMemo(() => [...new Set(cards.map((c) => c.album).filter(Boolean))].sort(), [cards]);
   const allCollectionLines = useMemo(() => [...new Set(cards.map((c) => c.collectionLine).filter(Boolean))].sort(), [cards]);
   const albumUsage = useMemo(() => {
@@ -1669,7 +1684,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
     const used = cards.filter((c) => c.characterSeries === form.characterSeries).map((c) => c.character).filter(Boolean);
     return [.../* @__PURE__ */ new Set([...base, ...used])].sort();
   }, [cards, form.characterSeries, characterOptions]);
-  const members = useMemo(() => [...new Set(cards.filter((c) => !form.group || c.group === form.group).map((c) => c.member).filter(Boolean))].sort(), [cards, form.group]);
+  const members = useMemo(() => [...new Set(allMembersOf(cards.filter((c) => !form.group || c.group === form.group)))].sort(), [cards, form.group]);
   const formAlbums = useMemo(() => {
     const fromCards = cards.filter((c) => !form.group || c.group === form.group).map((c) => c.album).filter(Boolean);
     const tourTitles = Object.keys(TOUR_FANMEETING_MAP);
@@ -1706,7 +1721,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
       if (filterOwned === "missing" && owned) return false;
       if (filterOwned === "wishlist" && c.status !== "Wishlist") return false;
       if (filterGroup && c.group !== filterGroup) return false;
-      if (selectedMemberFilters.size > 0 && !selectedMemberFilters.has(c.member)) return false;
+      if (selectedMemberFilters.size > 0 && !cardMembers(c).some((m) => selectedMemberFilters.has(m))) return false;
       if (selectedAlbumFilters.size > 0 && !selectedAlbumFilters.has(c.album)) return false;
       if (selectedReleaseCategoryFilters.size > 0 && !selectedReleaseCategoryFilters.has(c.releaseCategory)) return false;
       if (selectedCollectionLineFilters.size > 0 && !selectedCollectionLineFilters.has(c.collectionLine)) return false;
@@ -1741,12 +1756,12 @@ function PhotocardTracker({ isOwner = true } = {}) {
       if (search) {
         const q = search.toLowerCase();
         let hay;
-        if (searchField === "member") hay = (c.member || "").toLowerCase();
+        if (searchField === "member") hay = cardMembers(c).join(" ").toLowerCase();
         else if (searchField === "album") hay = (c.album || "").toLowerCase();
         else if (searchField === "category") hay = (c.category || "").toLowerCase();
         else if (searchField === "source") hay = (c.source || "").toLowerCase();
         else if (searchField === "notes") hay = (c.notes || "").toLowerCase();
-        else hay = [c.group, c.member, c.album, c.releaseCategory, c.collectionLine, c.category, c.source, c.itemType, c.productFormat, c.characterSeries, c.character, ...toTags(c.versionDetail), c.notes, ...(c.copies || []).map((cp) => cp.seller)].join(" ").toLowerCase();
+        else hay = [c.group, ...cardMembers(c), c.album, c.releaseCategory, c.collectionLine, c.category, c.source, c.itemType, c.productFormat, c.characterSeries, c.character, ...toTags(c.versionDetail), c.notes, ...(c.copies || []).map((cp) => cp.seller)].join(" ").toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -1799,7 +1814,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
     cards.forEach((c) => {
       const key = [
         normVal(c.group),
-        normVal(c.member),
+        cardMembers(c).map(normVal).sort().join("&"),
         normVal(c.album),
         normVal(c.itemType),
         normVal(c.productFormat),
@@ -1834,12 +1849,15 @@ function PhotocardTracker({ isOwner = true } = {}) {
     });
     const byMember = {};
     matches.forEach((m) => {
-      const mem = m.card.member || "Unknown";
-      if (!byMember[mem]) byMember[mem] = { count: 0, spent: 0, ids: /* @__PURE__ */ new Set() };
-      byMember[mem].count += 1;
-      byMember[mem].spent += parsePrice(m.copy.price);
-      byMember[mem].ids.add(m.card.id);
+      const mems = cardMembers(m.card);
+      (mems.length ? mems : ["Unknown"]).forEach((mem) => {
+        if (!byMember[mem]) byMember[mem] = { count: 0, spent: 0, ids: /* @__PURE__ */ new Set() };
+        byMember[mem].count += 1;
+        byMember[mem].spent += parsePrice(m.copy.price);
+        byMember[mem].ids.add(m.card.id);
+      });
     });
+    const hasSharedCards = matches.some((m) => cardMembers(m.card).length > 1);
     const bySource = {};
     matches.forEach((m) => {
       const src = m.card.source || "Unknown";
@@ -1909,17 +1927,19 @@ function PhotocardTracker({ isOwner = true } = {}) {
       }
     });
     const recentHauls = matches.slice().sort((a, b) => (b.copy.date || "").localeCompare(a.copy.date || "")).slice(0, 8);
-    return { matches, cardsBought, uniqueIds, uniqueCards, duplicateCopies, duplicateCardIds, amountSpent, avgCost, byCategory, byMember, bySource, priciestMatch, timeBreakdown, addedIds, recentHauls };
+    return { matches, cardsBought, uniqueIds, uniqueCards, duplicateCopies, duplicateCardIds, amountSpent, avgCost, byCategory, byMember, bySource, priciestMatch, timeBreakdown, addedIds, recentHauls, hasSharedCards };
   }, [cards, statsBounds]);
   const memberOwnedBreakdown = useMemo(() => {
     const map = {};
     cards.forEach((c) => {
       if (!isOwned(c)) return;
-      const mem = c.member || "Unknown";
-      if (!map[mem]) map[mem] = { count: 0, spent: 0, ids: /* @__PURE__ */ new Set() };
-      map[mem].count += 1;
-      map[mem].spent += sumSpent(c);
-      map[mem].ids.add(c.id);
+      const mems = cardMembers(c);
+      (mems.length ? mems : ["Unknown"]).forEach((mem) => {
+        if (!map[mem]) map[mem] = { count: 0, spent: 0, ids: /* @__PURE__ */ new Set() };
+        map[mem].count += 1;
+        map[mem].spent += sumSpent(c);
+        map[mem].ids.add(c.id);
+      });
     });
     return Object.entries(map).sort((a, b) => b[1].count - a[1].count);
   }, [cards]);
@@ -1962,19 +1982,21 @@ function PhotocardTracker({ isOwner = true } = {}) {
   const groupRosterMap = useMemo(() => {
     const map = {};
     cards.forEach((c) => {
-      if (c.group && c.member && c.member !== "OT8 / Group") {
+      if (!c.group) return;
+      cardMembers(c).filter((m) => m !== "OT8 / Group").forEach((m) => {
         if (!map[c.group]) map[c.group] = /* @__PURE__ */ new Set();
-        map[c.group].add(c.member);
-      }
+        map[c.group].add(m);
+      });
     });
     return map;
   }, [cards]);
   const releaseCompletion = useMemo(() => {
     const map = {};
     cards.forEach((c) => {
-      if (!isOwned(c) || !c.album || !c.group || !c.member || c.member === "OT8 / Group") return;
+      const mems = cardMembers(c).filter((m) => m !== "OT8 / Group");
+      if (!isOwned(c) || !c.album || !c.group || mems.length === 0) return;
       if (!map[c.album]) map[c.album] = { group: c.group, members: /* @__PURE__ */ new Set(), ids: /* @__PURE__ */ new Set() };
-      map[c.album].members.add(c.member);
+      mems.forEach((m) => map[c.album].members.add(m));
       map[c.album].ids.add(c.id);
     });
     const rows = Object.entries(map).map(([album, v]) => {
@@ -2039,7 +2061,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
   function cardSignature(c) {
     return [
       normVal(c.group),
-      normVal(c.member),
+      cardMembers(c).map(normVal).sort().join("&"),
       normVal(c.album),
       normVal(c.itemType),
       normVal(c.productFormat),
@@ -2051,11 +2073,11 @@ function PhotocardTracker({ isOwner = true } = {}) {
     if (!card) return [];
     const isAteez = normVal(card.group) === "ateez";
     const order = isAteez ? ATEEZ_MEMBER_ORDER : [];
-    const known = cards.filter((c) => c.group === card.group).map((c) => c.member).filter(Boolean);
+    const known = allMembersOf(cards.filter((c) => c.group === card.group));
     const rest = [.../* @__PURE__ */ new Set([...known, ...extras])].filter((m) => !order.includes(m)).sort();
-    const names = [...order, ...rest].filter((m) => normVal(m) !== normVal(card.member));
+    const names = [...order, ...rest].filter((m) => !cardMembers(card).some((x) => normVal(x) === normVal(m)));
     const existing = new Set(cards.map(cardSignature));
-    return names.map((m) => ({ member: m, exists: existing.has(cardSignature({ ...card, member: m })) }));
+    return names.map((m) => ({ member: m, exists: existing.has(cardSignature({ ...card, member: m, coMembers: [] })) }));
   }
   function openDuplicate(card) {
     const cands = computeDupCandidates(card, []);
@@ -2078,7 +2100,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
     const name = dupExtraInput.trim();
     if (!name || !dupCard) return;
     const already = computeDupCandidates(dupCard, dupExtra).some((c) => normVal(c.member) === normVal(name));
-    if (already || normVal(name) === normVal(dupCard.member)) {
+    if (already || cardMembers(dupCard).some((x) => normVal(x) === normVal(name))) {
       setDupExtraInput("");
       return;
     }
@@ -2099,6 +2121,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
         ...emptyForm,
         group: dupCard.group,
         member: m,
+        coMembers: [],
         album: dupCard.album,
         releaseCategory: dupCard.releaseCategory || "",
         collectionLine: dupCard.collectionLine || "",
@@ -2530,7 +2553,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
   }
   function searchMatchLabel(card, query) {
     const q = query.toLowerCase();
-    if ((card.member || "").toLowerCase().includes(q)) return "MEMBER MATCH";
+    if (cardMembers(card).some((m) => m.toLowerCase().includes(q))) return "MEMBER MATCH";
     if ((card.album || "").toLowerCase().includes(q)) return "RELEASE MATCH";
     if ((card.category || "").toLowerCase().includes(q)) return "CARD TYPE MATCH";
     if ((card.source || "").toLowerCase().includes(q)) return "SOURCE MATCH";
@@ -2636,7 +2659,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
     const copyCount = (card.copies || []).length;
     const showCount = card.status === "Purchased" || card.status === "Owned" || card.status === "Sold";
     const displayCount = card.status === "Sold" ? 0 : copyCount;
-    return /* @__PURE__ */ React.createElement("div", { key: card.id }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline justify-between gap-1 mb-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-semibold truncate" }, card.group || "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-semibold truncate text-right" }, card.member || "")), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { key: card.id }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline justify-between gap-1 mb-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-semibold truncate" }, card.group || "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-semibold truncate text-right", title: memberLabel(card) }, memberLabel(card))), /* @__PURE__ */ React.createElement(
       "div",
       {
         role: "button",
@@ -2909,13 +2932,13 @@ function PhotocardTracker({ isOwner = true } = {}) {
     /* @__PURE__ */ React.createElement("div", { className: "w-7 shrink-0 rounded overflow-hidden relative flex items-center justify-center", style: { aspectRatio: "55 / 85", background: card.frontImage ? theme.surfaceAlt : placeholderColorFor(card.id) } }, card.frontImage ? /* @__PURE__ */ React.createElement(CroppedImage, { src: resolveImageUrl(card.frontImage), crop: card.imageCrop, onError: (e) => {
       e.target.style.display = "none";
     } }) : /* @__PURE__ */ React.createElement(ImageIcon, { size: 10, style: { color: theme.bg, opacity: 0.75 } })),
-    /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-medium truncate" }, [card.member, card.album].filter(Boolean).join(" \xB7 ") || "Untitled card"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px]", style: { color: theme.muted } }, formatFlexDate(copy.date))),
+    /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-medium truncate" }, [memberLabel(card), card.album].filter(Boolean).join(" \xB7 ") || "Untitled card"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px]", style: { color: theme.muted } }, formatFlexDate(copy.date))),
     /* @__PURE__ */ React.createElement("span", { className: "text-sm shrink-0", style: { fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace" } }, "\u20B1", formatCurrency(parsePrice(copy.price)))
   )))), Object.keys(statsData.byMember).length > 0 && (() => {
     const entries = Object.entries(statsData.byMember).sort((a, b) => b[1].spent - a[1].spent);
     const maxSpent = Math.max(...entries.map(([, v]) => v.spent), 1);
-    return /* @__PURE__ */ React.createElement("div", { className: "p-4 rounded-xl", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline justify-between mb-3" }, /* @__PURE__ */ React.createElement("h3", { className: "pc-font-display text-base" }, "Where it went, by member"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px]", style: { color: theme.muted } }, "SPEND \xB7 CARDS")), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, entries.map(([mem, v]) => /* @__PURE__ */ React.createElement("button", { key: mem, onClick: () => showStatCards(v.ids), className: "w-full text-left" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm truncate" }, mem), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] shrink-0", style: { color: theme.muted } }, "\u20B1", formatCurrency(v.spent), " \xB7 ", v.count)), /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 rounded-full overflow-hidden", style: { background: theme.surfaceAlt } }, /* @__PURE__ */ React.createElement("div", { style: { width: `${v.spent / maxSpent * 100}%`, height: "100%", background: theme.plum } }))))));
-  })(), Object.keys(statsData.byCategory).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "p-4 rounded-xl", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("h3", { className: "pc-font-display text-base mb-3" }, "By card type"), /* @__PURE__ */ React.createElement("div", null, Object.entries(statsData.byCategory).sort((a, b) => b[1].spent - a[1].spent).map(([cat, v]) => /* @__PURE__ */ React.createElement("button", { key: cat, onClick: () => showStatCards(v.ids), className: "flex items-center justify-between w-full py-2 text-sm text-left", style: { borderBottom: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("span", { className: "truncate pr-2" }, cat), /* @__PURE__ */ React.createElement("span", { className: "shrink-0", style: { color: theme.muted } }, v.count, " card", v.count !== 1 ? "s" : "", " \xB7 \u20B1", formatCurrency(v.spent))))))), statsData.priciestMatch && statsData.priciestMatch.price > 0 && /* @__PURE__ */ React.createElement("button", { onClick: () => showStatCards([statsData.priciestMatch.card.id]), className: "w-full p-3 rounded-xl text-left mb-6 flex items-center justify-between gap-3", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs", style: { color: theme.muted } }, "Priciest card this period"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-medium mt-0.5 truncate" }, [statsData.priciestMatch.card.member, statsData.priciestMatch.card.album].filter(Boolean).join(" \xB7 ") || "Untitled card")), /* @__PURE__ */ React.createElement("p", { className: "pc-font-display text-lg shrink-0" }, "\u20B1", formatCurrency(statsData.priciestMatch.price))), Object.keys(statsData.bySource).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("h3", { className: "pc-font-display text-base mb-3" }, "Spending by source"), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "p-4 rounded-xl", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline justify-between mb-3" }, /* @__PURE__ */ React.createElement("h3", { className: "pc-font-display text-base" }, "Where it went, by member"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px]", style: { color: theme.muted } }, "SPEND \xB7 CARDS")), statsData.hasSharedCards && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] mb-3", style: { color: theme.muted } }, "Duo/unit cards count toward each member on them, so these rows can add up to more than your total."), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, entries.map(([mem, v]) => /* @__PURE__ */ React.createElement("button", { key: mem, onClick: () => showStatCards(v.ids), className: "w-full text-left" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm truncate" }, mem), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] shrink-0", style: { color: theme.muted } }, "\u20B1", formatCurrency(v.spent), " \xB7 ", v.count)), /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 rounded-full overflow-hidden", style: { background: theme.surfaceAlt } }, /* @__PURE__ */ React.createElement("div", { style: { width: `${v.spent / maxSpent * 100}%`, height: "100%", background: theme.plum } }))))));
+  })(), Object.keys(statsData.byCategory).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "p-4 rounded-xl", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("h3", { className: "pc-font-display text-base mb-3" }, "By card type"), /* @__PURE__ */ React.createElement("div", null, Object.entries(statsData.byCategory).sort((a, b) => b[1].spent - a[1].spent).map(([cat, v]) => /* @__PURE__ */ React.createElement("button", { key: cat, onClick: () => showStatCards(v.ids), className: "flex items-center justify-between w-full py-2 text-sm text-left", style: { borderBottom: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("span", { className: "truncate pr-2" }, cat), /* @__PURE__ */ React.createElement("span", { className: "shrink-0", style: { color: theme.muted } }, v.count, " card", v.count !== 1 ? "s" : "", " \xB7 \u20B1", formatCurrency(v.spent))))))), statsData.priciestMatch && statsData.priciestMatch.price > 0 && /* @__PURE__ */ React.createElement("button", { onClick: () => showStatCards([statsData.priciestMatch.card.id]), className: "w-full p-3 rounded-xl text-left mb-6 flex items-center justify-between gap-3", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs", style: { color: theme.muted } }, "Priciest card this period"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-medium mt-0.5 truncate" }, [memberLabel(statsData.priciestMatch.card), statsData.priciestMatch.card.album].filter(Boolean).join(" \xB7 ") || "Untitled card")), /* @__PURE__ */ React.createElement("p", { className: "pc-font-display text-lg shrink-0" }, "\u20B1", formatCurrency(statsData.priciestMatch.price))), Object.keys(statsData.bySource).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("h3", { className: "pc-font-display text-base mb-3" }, "Spending by source"), /* @__PURE__ */ React.createElement(
     CappedList,
     {
       items: Object.entries(statsData.bySource).sort((a, b) => b[1].spent - a[1].spent),
@@ -2933,7 +2956,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
       items: releaseCompletion,
       renderRow: (r) => /* @__PURE__ */ React.createElement("button", { key: r.album, onClick: () => showStatCards(r.ids), className: "w-full px-3 py-2 rounded text-sm text-left", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", { className: "truncate pr-2" }, r.album), /* @__PURE__ */ React.createElement("span", { className: "shrink-0", style: { color: r.missing.length === 0 ? theme.accent : theme.muted } }, r.missing.length === 0 ? "Complete \u2713" : `${r.owned}/${r.total}`)), r.missing.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1", style: { color: theme.muted } }, "Missing: ", r.missing.join(", ")))
     }
-  )), memberOwnedBreakdown.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("h3", { className: "pc-font-display text-base mb-3" }, "Owned cards by member ", /* @__PURE__ */ React.createElement("span", { className: "font-normal", style: { color: theme.muted } }, "(all time)")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, memberOwnedBreakdown.map(([mem, v]) => /* @__PURE__ */ React.createElement("button", { key: mem, onClick: () => showStatCards(v.ids), className: "flex items-center justify-between w-full px-3 py-2 rounded text-sm", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("span", null, mem), /* @__PURE__ */ React.createElement("span", { style: { color: theme.muted } }, v.count, " card", v.count !== 1 ? "s" : "", " \xB7 \u20B1", formatCurrency(v.spent)))))), statusOverview.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("h3", { className: "pc-font-display text-base mb-3" }, "Status overview ", /* @__PURE__ */ React.createElement("span", { className: "font-normal", style: { color: theme.muted } }, "(all time)")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, statusOverview.map((s) => /* @__PURE__ */ React.createElement("button", { key: s.value, onClick: () => showStatCards(s.ids), className: "flex items-center justify-between w-full px-3 py-2 rounded text-sm", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { width: 8, height: 8, borderRadius: "50%", background: s.color, display: "inline-block" } }), s.value), /* @__PURE__ */ React.createElement("span", { style: { color: theme.muted } }, s.count, " card", s.count !== 1 ? "s" : ""))))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "pc-font-display text-base mb-3" }, "Also in this period"), /* @__PURE__ */ React.createElement("button", { onClick: () => showStatCards(statsData.addedIds), className: "w-full p-3 rounded-lg text-left", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("p", { className: "pc-font-display text-xl" }, statsData.addedIds.size), /* @__PURE__ */ React.createElement("p", { className: "text-xs", style: { color: theme.muted } }, "Added to tracker")))), /* @__PURE__ */ React.createElement("p", { className: "text-center text-xs mt-8 pt-4", style: { color: theme.muted, borderTop: `1px solid ${theme.border}` } }, ownedCount, " owned \xB7 ", cards.length, " tracked \xB7 ", totalPhysical, " physical card", totalPhysical !== 1 ? "s" : "", duplicateCount > 0 ? ` \xB7 ${duplicateCount} duplicate${duplicateCount !== 1 ? "s" : ""}` : "")), modalMode && /* @__PURE__ */ React.createElement(
+  )), memberOwnedBreakdown.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("h3", { className: "pc-font-display text-base mb-3" }, "Owned cards by member ", /* @__PURE__ */ React.createElement("span", { className: "font-normal", style: { color: theme.muted } }, "(all time)")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, memberOwnedBreakdown.map(([mem, v]) => /* @__PURE__ */ React.createElement("button", { key: mem, onClick: () => showStatCards(v.ids), className: "flex items-center justify-between w-full px-3 py-2 rounded text-sm", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("span", null, mem), /* @__PURE__ */ React.createElement("span", { style: { color: theme.muted } }, v.count, " card", v.count !== 1 ? "s" : "", " \xB7 \u20B1", formatCurrency(v.spent))))), cards.some((c) => isOwned(c) && cardMembers(c).length > 1) && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] mt-2", style: { color: theme.muted } }, "Duo/unit cards count toward each member on them, so these rows can add up to more than your total.")), statusOverview.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("h3", { className: "pc-font-display text-base mb-3" }, "Status overview ", /* @__PURE__ */ React.createElement("span", { className: "font-normal", style: { color: theme.muted } }, "(all time)")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, statusOverview.map((s) => /* @__PURE__ */ React.createElement("button", { key: s.value, onClick: () => showStatCards(s.ids), className: "flex items-center justify-between w-full px-3 py-2 rounded text-sm", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { width: 8, height: 8, borderRadius: "50%", background: s.color, display: "inline-block" } }), s.value), /* @__PURE__ */ React.createElement("span", { style: { color: theme.muted } }, s.count, " card", s.count !== 1 ? "s" : ""))))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "pc-font-display text-base mb-3" }, "Also in this period"), /* @__PURE__ */ React.createElement("button", { onClick: () => showStatCards(statsData.addedIds), className: "w-full p-3 rounded-lg text-left", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("p", { className: "pc-font-display text-xl" }, statsData.addedIds.size), /* @__PURE__ */ React.createElement("p", { className: "text-xs", style: { color: theme.muted } }, "Added to tracker")))), /* @__PURE__ */ React.createElement("p", { className: "text-center text-xs mt-8 pt-4", style: { color: theme.muted, borderTop: `1px solid ${theme.border}` } }, ownedCount, " owned \xB7 ", cards.length, " tracked \xB7 ", totalPhysical, " physical card", totalPhysical !== 1 ? "s" : "", duplicateCount > 0 ? ` \xB7 ${duplicateCount} duplicate${duplicateCount !== 1 ? "s" : ""}` : "")), modalMode && /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5",
@@ -2978,7 +3001,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
           crop: form.backImageCrop,
           onCropChange: (c) => setForm((f) => ({ ...f, backImageCrop: c }))
         }
-      ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-center", style: { color: theme.muted } }, "Cards without a scan show a placeholder sleeve in the grid.")), /* @__PURE__ */ React.createElement("section", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-3 gap-y-4" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Group", value: form.group, options: groups, placeholder: "New group name", onChange: (v) => setForm((f) => ({ ...f, group: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Member *", value: form.member, options: members, placeholder: "New member name", onChange: (v) => setForm((f) => ({ ...f, member: v })) }), /* @__PURE__ */ React.createElement(Field, { label: "Release Category" }, /* @__PURE__ */ React.createElement("select", { value: form.releaseCategory, onChange: (e) => setForm((f) => ({ ...f, releaseCategory: e.target.value, collectionLine: "" })), className: "w-full px-2.5 py-2 rounded text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Optional"), RELEASE_CATEGORIES.map((c) => /* @__PURE__ */ React.createElement("option", { key: c, value: c }, c)))), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Collection / Line", value: form.collectionLine, options: form.releaseCategory ? RELEASE_CATEGORY_LINES[form.releaseCategory] : [], placeholder: form.releaseCategory ? "Auto-fills from Release/Edition below" : "Pick a Release Category first", onChange: (v) => setForm((f) => ({ ...f, collectionLine: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Release / Edition *", value: form.album, options: formAlbums, placeholder: "Album / collection / drop name", onChange: handleAlbumChange }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Item Type", value: form.itemType, options: itemTypeOptions, placeholder: "e.g. Photocard", onChange: (v) => setForm((f) => ({ ...f, itemType: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Card Type / Benefit", value: form.category, options: categories, placeholder: "e.g. POB, Lucky Draw", onChange: (v) => setForm((f) => ({ ...f, category: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Product / Format", value: form.productFormat, options: productFormatOptions, placeholder: "e.g. POCAALBUM", onChange: (v) => setForm((f) => ({ ...f, productFormat: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Source / Retailer / Partner", value: form.source, options: sourceOptions, placeholder: "Retailer, platform, partner", onChange: (v) => setForm((f) => ({ ...f, source: v })) }), /* @__PURE__ */ React.createElement(TagMultiSelect, { label: "Version / Edition", values: toTags(form.versionDetail), options: versionDetailOptions, onChange: (v) => setForm((f) => ({ ...f, versionDetail: v })), placeholder: "e.g. 1.0, A, Pink" }), /* @__PURE__ */ React.createElement(Field, { label: "Date released" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: form.releaseDate, onChange: (v) => setForm((f) => ({ ...f, releaseDate: v })) })), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character Series", value: form.characterSeries, options: characterSeriesOptions, placeholder: "Optional", onChange: (v) => setForm((f) => ({ ...f, characterSeries: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character", value: form.character, options: formCharacterOptions, placeholder: "Optional", onChange: (v) => setForm((f) => ({ ...f, character: v })) }), /* @__PURE__ */ React.createElement(Field, { label: "Status" }, /* @__PURE__ */ React.createElement("select", { value: form.status, onChange: (e) => setForm((f) => ({ ...f, status: e.target.value })), className: "w-full px-2.5 py-2 rounded text-sm" }, STATUSES.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.value, value: s.value }, s.value)))), /* @__PURE__ */ React.createElement("div", { className: "sm:col-span-2 xl:col-span-3" }, /* @__PURE__ */ React.createElement(Field, { label: "Notes" }, /* @__PURE__ */ React.createElement("textarea", { value: form.notes, onChange: (e) => setForm((f) => ({ ...f, notes: e.target.value })), rows: 2, placeholder: "Optional notes", className: "w-full px-2.5 py-2 rounded text-sm resize-none" })))), (form.source || toTags(form.versionDetail).length > 0) && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-2", style: { color: theme.muted } }, "Descriptor: ", versionName(form) || "\u2014"), /* @__PURE__ */ React.createElement("div", { className: "mt-5 pt-5", style: { borderTop: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold" }, "Copies of this card"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mt-0.5", style: { color: theme.muted } }, "Each physical copy keeps its own purchase date, price, and seller.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCopy, className: "shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded font-medium", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Plus, { size: 12 }), " ", form.copies.length === 0 ? "Add a copy" : "Add another")), form.copies.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "rounded-xl px-3 py-4 text-xs text-center", style: { color: theme.muted, background: theme.surfaceAlt, border: `1px dashed ${theme.border}` } }, "No physical copies recorded yet.") : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, form.copies.map((copy, idx) => /* @__PURE__ */ React.createElement("div", { key: copy.id, className: "grid grid-cols-1 sm:grid-cols-[1fr_150px_120px_auto] gap-2 items-center p-2.5 rounded-xl", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(SelectOrNew, { value: copy.seller, options: sellerOptions, placeholder: "Seller / source", onChange: (v) => updateCopy(idx, "seller", v), compact: true }), /* @__PURE__ */ React.createElement(FreeformDateInput, { value: copy.date, onChange: (v) => updateCopy(idx, "date", v), compact: true }), /* @__PURE__ */ React.createElement("input", { type: "text", placeholder: "Price", value: copy.price, onChange: (e) => updateCopy(idx, "price", e.target.value), className: "px-2 py-1.5 rounded text-xs" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeCopy(idx), className: "p-1.5 justify-self-end", style: { color: "#A24A3E" }, title: "Remove copy" }, /* @__PURE__ */ React.createElement(X, { size: 14 })))))), /* @__PURE__ */ React.createElement("div", { className: "mt-4" }, /* @__PURE__ */ React.createElement(Field, { label: "Date sold (optional)" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: form.dateSold, onChange: (v) => setForm((f) => ({ ...f, dateSold: v })) }))))),
+      ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-center", style: { color: theme.muted } }, "Cards without a scan show a placeholder sleeve in the grid.")), /* @__PURE__ */ React.createElement("section", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-3 gap-y-4" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Group", value: form.group, options: groups, placeholder: "New group name", onChange: (v) => setForm((f) => ({ ...f, group: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Member *", value: form.member, options: members, placeholder: "New member name", onChange: (v) => setForm((f) => ({ ...f, member: v, coMembers: toTags(f.coMembers).filter((m) => normVal(m) !== normVal(v)) })) }), /* @__PURE__ */ React.createElement(TagMultiSelect, { label: "Also features (duo / unit cards)", values: toTags(form.coMembers), options: members.filter((m) => normVal(m) !== normVal(form.member)), onChange: (v) => setForm((f) => ({ ...f, coMembers: v })), placeholder: "Add another member on this card" }), /* @__PURE__ */ React.createElement(Field, { label: "Release Category" }, /* @__PURE__ */ React.createElement("select", { value: form.releaseCategory, onChange: (e) => setForm((f) => ({ ...f, releaseCategory: e.target.value, collectionLine: "" })), className: "w-full px-2.5 py-2 rounded text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Optional"), RELEASE_CATEGORIES.map((c) => /* @__PURE__ */ React.createElement("option", { key: c, value: c }, c)))), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Collection / Line", value: form.collectionLine, options: form.releaseCategory ? RELEASE_CATEGORY_LINES[form.releaseCategory] : [], placeholder: form.releaseCategory ? "Auto-fills from Release/Edition below" : "Pick a Release Category first", onChange: (v) => setForm((f) => ({ ...f, collectionLine: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Release / Edition *", value: form.album, options: formAlbums, placeholder: "Album / collection / drop name", onChange: handleAlbumChange }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Item Type", value: form.itemType, options: itemTypeOptions, placeholder: "e.g. Photocard", onChange: (v) => setForm((f) => ({ ...f, itemType: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Card Type / Benefit", value: form.category, options: categories, placeholder: "e.g. POB, Lucky Draw", onChange: (v) => setForm((f) => ({ ...f, category: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Product / Format", value: form.productFormat, options: productFormatOptions, placeholder: "e.g. POCAALBUM", onChange: (v) => setForm((f) => ({ ...f, productFormat: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Source / Retailer / Partner", value: form.source, options: sourceOptions, placeholder: "Retailer, platform, partner", onChange: (v) => setForm((f) => ({ ...f, source: v })) }), /* @__PURE__ */ React.createElement(TagMultiSelect, { label: "Version / Edition", values: toTags(form.versionDetail), options: versionDetailOptions, onChange: (v) => setForm((f) => ({ ...f, versionDetail: v })), placeholder: "e.g. 1.0, A, Pink" }), /* @__PURE__ */ React.createElement(Field, { label: "Date released" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: form.releaseDate, onChange: (v) => setForm((f) => ({ ...f, releaseDate: v })) })), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character Series", value: form.characterSeries, options: characterSeriesOptions, placeholder: "Optional", onChange: (v) => setForm((f) => ({ ...f, characterSeries: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character", value: form.character, options: formCharacterOptions, placeholder: "Optional", onChange: (v) => setForm((f) => ({ ...f, character: v })) }), /* @__PURE__ */ React.createElement(Field, { label: "Status" }, /* @__PURE__ */ React.createElement("select", { value: form.status, onChange: (e) => setForm((f) => ({ ...f, status: e.target.value })), className: "w-full px-2.5 py-2 rounded text-sm" }, STATUSES.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.value, value: s.value }, s.value)))), /* @__PURE__ */ React.createElement("div", { className: "sm:col-span-2 xl:col-span-3" }, /* @__PURE__ */ React.createElement(Field, { label: "Notes" }, /* @__PURE__ */ React.createElement("textarea", { value: form.notes, onChange: (e) => setForm((f) => ({ ...f, notes: e.target.value })), rows: 2, placeholder: "Optional notes", className: "w-full px-2.5 py-2 rounded text-sm resize-none" })))), (form.source || toTags(form.versionDetail).length > 0) && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-2", style: { color: theme.muted } }, "Descriptor: ", versionName(form) || "\u2014"), /* @__PURE__ */ React.createElement("div", { className: "mt-5 pt-5", style: { borderTop: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold" }, "Copies of this card"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mt-0.5", style: { color: theme.muted } }, "Each physical copy keeps its own purchase date, price, and seller.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCopy, className: "shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded font-medium", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Plus, { size: 12 }), " ", form.copies.length === 0 ? "Add a copy" : "Add another")), form.copies.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "rounded-xl px-3 py-4 text-xs text-center", style: { color: theme.muted, background: theme.surfaceAlt, border: `1px dashed ${theme.border}` } }, "No physical copies recorded yet.") : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, form.copies.map((copy, idx) => /* @__PURE__ */ React.createElement("div", { key: copy.id, className: "grid grid-cols-1 sm:grid-cols-[1fr_150px_120px_auto] gap-2 items-center p-2.5 rounded-xl", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(SelectOrNew, { value: copy.seller, options: sellerOptions, placeholder: "Seller / source", onChange: (v) => updateCopy(idx, "seller", v), compact: true }), /* @__PURE__ */ React.createElement(FreeformDateInput, { value: copy.date, onChange: (v) => updateCopy(idx, "date", v), compact: true }), /* @__PURE__ */ React.createElement("input", { type: "text", placeholder: "Price", value: copy.price, onChange: (e) => updateCopy(idx, "price", e.target.value), className: "px-2 py-1.5 rounded text-xs" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeCopy(idx), className: "p-1.5 justify-self-end", style: { color: "#A24A3E" }, title: "Remove copy" }, /* @__PURE__ */ React.createElement(X, { size: 14 })))))), /* @__PURE__ */ React.createElement("div", { className: "mt-4" }, /* @__PURE__ */ React.createElement(Field, { label: "Date sold (optional)" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: form.dateSold, onChange: (v) => setForm((f) => ({ ...f, dateSold: v })) }))))),
       /* @__PURE__ */ React.createElement("div", { className: "px-5 sm:px-7 py-4 flex flex-wrap items-center gap-2 justify-end", style: { borderTop: `1px solid ${theme.border}`, background: theme.surfaceAlt } }, editingId && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => deleteCard(editingId), className: "mr-auto px-3 py-2 rounded text-sm flex items-center gap-1", style: { color: "#A24A3E" } }, /* @__PURE__ */ React.createElement(Trash2, { size: 14 }), " Delete"), !editingId && /* @__PURE__ */ React.createElement("span", { className: "mr-auto text-[11px] hidden sm:inline", style: { color: theme.muted } }, "Ctrl/\u2318 + Enter to save"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeModal, className: "px-4 py-2 rounded text-sm font-medium", style: { border: `1px solid ${theme.border}`, background: theme.surface } }, "Cancel"), !editingId && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveFormAndAddAnother, className: "px-4 py-2 rounded text-sm font-medium", style: { border: `1px solid ${theme.border}`, background: theme.surface } }, "Save and add another"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveForm, className: "px-5 py-2 rounded text-sm font-medium", style: { background: theme.accent, color: theme.bg } }, editingId ? "Save changes" : "Save card"))
     )
   ), selectedCard && !modalMode && (() => {
@@ -3002,7 +3025,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
           }
         }
       ) : /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center gap-1", style: { color: "rgba(255,255,255,0.6)" } }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 24 }), /* @__PURE__ */ React.createElement("span", { className: "text-xs" }, "No ", detailSide, " image")), isOwner && (detailSide === "front" ? selectedCard.frontImage : selectedCard.backImage) && /* @__PURE__ */ React.createElement("button", { onClick: () => openQuickCrop(selectedCard, detailSide), className: "absolute bottom-2 right-2 w-7 h-7 rounded-full flex items-center justify-center", style: { background: "rgba(0,0,0,0.5)" }, title: `Adjust ${detailSide} crop` }, /* @__PURE__ */ React.createElement(Pencil, { size: 12, color: "#fff" }))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex rounded overflow-hidden text-[11px]", style: { border: `1px solid rgba(255,255,255,0.3)` } }, /* @__PURE__ */ React.createElement("button", { onClick: () => setDetailSide("front"), className: "px-3 py-1 font-medium", style: { background: detailSide === "front" ? theme.bg : "transparent", color: detailSide === "front" ? theme.text : "rgba(255,255,255,0.8)" } }, "Front"), /* @__PURE__ */ React.createElement("button", { onClick: () => setDetailSide("back"), className: "px-3 py-1 font-medium", style: { background: detailSide === "back" ? theme.bg : "transparent", color: detailSide === "back" ? theme.text : "rgba(255,255,255,0.8)" } }, "Back"))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-center mt-2", style: { color: "rgba(255,255,255,0.55)" } }, (selectedCard.copies || []).length > 0 ? `${selectedCard.copies.length} cop${selectedCard.copies.length !== 1 ? "ies" : "y"} tracked.` : "Cards without a scan show a placeholder sleeve in the grid.")),
-      /* @__PURE__ */ React.createElement("div", { className: "p-5 flex-1 min-h-0 overflow-y-auto pc-scroll" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between mb-1 gap-2 pr-9" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-xl", style: { fontWeight: 600 } }, selectedCard.member || selectedCard.group), badge && (isOwner ? /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "p-5 flex-1 min-h-0 overflow-y-auto pc-scroll" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between mb-1 gap-2 pr-9" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-xl", style: { fontWeight: 600 } }, memberLabel(selectedCard) || selectedCard.group), badge && (isOwner ? /* @__PURE__ */ React.createElement(
         "button",
         {
           onClick: () => cycleStatus(selectedCard.id),
@@ -3153,7 +3176,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
       },
       /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Possible duplicates"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeDuplicates }, /* @__PURE__ */ React.createElement(X, { size: 18 }))),
       /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-4", style: { color: theme.muted } }, "Grouped when member, album, item type, product/format, card type, and version/edition all match \u2014 a likely sign the same card got entered twice."),
-      duplicateGroups.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-sm text-center py-8", style: { color: theme.muted } }, "No duplicates found.") : /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, duplicateGroups.map((group, gi) => /* @__PURE__ */ React.createElement("div", { key: gi, className: "rounded-xl overflow-hidden", style: { border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 text-xs font-medium", style: { background: theme.surfaceAlt, color: theme.text } }, [group[0].member, group[0].album, toTags(group[0].versionDetail).join(" \xB7 ")].filter(Boolean).join(" \xB7 ") || "Untitled card", /* @__PURE__ */ React.createElement("span", { style: { color: theme.muted } }, " \u2014 ", group.length, " entries")), /* @__PURE__ */ React.createElement("div", { className: "p-2 space-y-1.5" }, group.map((c) => {
+      duplicateGroups.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-sm text-center py-8", style: { color: theme.muted } }, "No duplicates found.") : /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, duplicateGroups.map((group, gi) => /* @__PURE__ */ React.createElement("div", { key: gi, className: "rounded-xl overflow-hidden", style: { border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 text-xs font-medium", style: { background: theme.surfaceAlt, color: theme.text } }, [memberLabel(group[0]), group[0].album, toTags(group[0].versionDetail).join(" \xB7 ")].filter(Boolean).join(" \xB7 ") || "Untitled card", /* @__PURE__ */ React.createElement("span", { style: { color: theme.muted } }, " \u2014 ", group.length, " entries")), /* @__PURE__ */ React.createElement("div", { className: "p-2 space-y-1.5" }, group.map((c) => {
         const badge = cardBadge(c);
         return /* @__PURE__ */ React.createElement("div", { key: c.id, className: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm" }, /* @__PURE__ */ React.createElement("div", { className: "w-8 shrink-0 rounded overflow-hidden relative flex items-center justify-center", style: { aspectRatio: "55 / 85", background: theme.surfaceAlt } }, c.frontImage ? /* @__PURE__ */ React.createElement(CroppedImage, { src: resolveImageUrl(c.frontImage), crop: c.imageCrop, onError: (e) => {
           e.target.style.display = "none";
