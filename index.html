@@ -358,7 +358,7 @@ const DEFAULT_VERSION_DETAILS = [
   "Unit"
 ];
 const DEFAULT_CHARACTER_SERIES = ["ANITEEZ", "MIGHTEEZ", "Birthday Characters"];
-const BUILD_INFO = { number: 1, date: "Oct 12, 2026", note: "Clickable links in Notes; build number in footer" };
+const BUILD_INFO = { number: 3, date: "Oct 14, 2026", note: "Bulk create prompt: roster order for unlabeled 8-card sets" };
 const RELEASE_CATEGORIES = ["Music Release", "Merch Collection", "Concert / Tour"];
 const RELEASE_CATEGORY_LINES = {
   "Music Release": ["Full Album", "Mini Album", "Single", "Special Album", "Japan Release"],
@@ -520,22 +520,61 @@ const emptyForm = {
   imageCrop: null,
   backImageCrop: null
 };
-const BULK_CREATE_PROMPT = `Look at this photocard template image and list every individual card shown (each labeled thumbnail counts as one card \u2014 don't skip any).
-
-Reply with ONLY a JSON array, no commentary, no markdown code fence. Each item:
-{
-  "group": "the group name (usually the same for every card, from context)",
-  "member": "the member name shown in the template header",
-  "album": "the album / era / section heading that thumbnail sits under",
-  "itemType": "Photocard, unless the label says otherwise (e.g. ID Card, Action Card, Digipack, Mini Card, Image Card, Polaroid Photocard, Standing Photocard)",
-  "productFormat": "the product it came packaged with, if shown (e.g. POCAALBUM, POB) \u2014 else leave blank",
-  "versionDetail": "the specific version/edition label under the thumbnail, e.g. 'A Ver 1', 'Diary Ver Limited', 'Z Ver ID Card'",
-  "category": "the card type / benefit if the section clearly indicates one (e.g. POB, Fanmeeting Benefit) \u2014 else leave blank",
-  "releaseDate": "YYYY, YYYY-MM, or YYYY-MM-DD if you can tell from context \u2014 else leave blank",
-  "source": "leave blank unless clearly shown"
+function buildBulkCreatePrompt(lists = {}) {
+  const itemTypes = lists.itemTypes || DEFAULT_ITEM_TYPES;
+  const categories = lists.categories || DEFAULT_CATEGORIES;
+  const productFormats = lists.productFormats || DEFAULT_PRODUCT_FORMATS;
+  const sources = lists.sources || HARDCODED_SOURCES;
+  const seedTitles = [...Object.keys(RELEASE_TO_COLLECTION_LINE), ...Object.keys(TOUR_FANMEETING_MAP)].filter((t) => !/ : /.test(t) || !TOUR_FANMEETING_MAP[t.replace(" : ", ": ")]);
+  const releaseNames = [...seedTitles];
+  (lists.albums || []).forEach((a) => {
+    if (!releaseNames.some((t) => looseKey(t) === looseKey(a))) releaseNames.push(a);
+  });
+  return [
+    "I'm attaching a screenshot of a fan-made photocard template. List EVERY individual card shown \u2014 each thumbnail is one card; don't skip any and don't merge any.",
+    "",
+    "Reply with ONLY a JSON array \u2014 no commentary, no markdown code fence. One object per card:",
+    "{",
+    '  "group": "e.g. ATEEZ",',
+    '  "member": "full stage name of the member on the card",',
+    '  "coMembers": ["any OTHER members on the same card \u2014 only for duo/unit cards; otherwise []"],',
+    '  "album": "the release this card belongs to",',
+    '  "itemType": "what the object is",',
+    '  "productFormat": "the product it came with, if shown \u2014 else \\"\\"",',
+    '  "versionDetail": ["short version tags"],',
+    '  "category": "the card type / benefit, if the template shows one \u2014 else \\"\\"",',
+    '  "releaseDate": "YYYY, YYYY-MM or YYYY-MM-DD if you can tell \u2014 else \\"\\"",',
+    '  "source": "the store / platform / partner named in the template \u2014 else \\"\\"",',
+    '  "notes": "see Notes below"',
+    "}",
+    "",
+    "MEMBERS",
+    "- Use full stage names. For ATEEZ: Hongjoong, Seonghwa, Yunho, Yeosang, San, Mingi, Wooyoung, Jongho. Templates often use initials instead (HJ, SH, YH, YS, SN, MG, WY, JH) \u2014 expand them.",
+    "- Take the member from the template's own labels: column headers, row labels, captions.",
+    "- If the cards are NOT labeled and a set has exactly 8 cards (one per member), they follow the standard order above \u2014 template makers almost always do. Read in normal reading order: left to right, then top to bottom. A 4 + 4 grid reads Hongjoong, Seonghwa, Yunho, Yeosang, then San, Mingi, Wooyoung, Jongho. If every row or section holds its own 8 (e.g. one row per version), the order starts over in each row.",
+    `- If the cards are NOT labeled and the set does not have exactly 8 cards (for example a duo/unit sheet), leave "member" as "" and write "members not labeled" in notes \u2014 don't guess. Never work out who someone is from their face.`,
+    '- If one card shows two or more members, put the first-listed one in "member" and the rest in "coMembers".',
+    "",
+    "RELEASE (album)",
+    "Use these exact spellings whenever the template's release matches one of them; otherwise copy the template's own spelling:",
+    releaseNames.join(" | "),
+    "",
+    "ITEM TYPE \u2014 use one of: " + itemTypes.filter((t) => t !== "Other").join(", ") + ".",
+    'If a row or section label starts with the item type (e.g. "CHARACTER CARD A VER"), that is the itemType and the rest is the version. Postcard templates are itemType "Postcard".',
+    "",
+    'VERSION (versionDetail) \u2014 an array of short tags. Keep the version name together with any photo-variant letter or number, exactly as labeled but tidied: "A ver. A", "A ver. Z", "Diary ver. A", "Z ver. Z", "Z ver. 1", "Kongsoonteez ver.". A row labeled "A VER A" becomes ["A ver. A"]. A section labeled only "A VER" becomes ["A ver."]. Extra attributes can be extra tags, e.g. ["Black ver.", "Image Card"].',
+    "",
+    "CARD TYPE / BENEFIT (category) \u2014 use one of: " + categories.filter((t) => t !== "Other").join(", ") + '. Banners like "pre-order benefit", "lucky draw", "gift with purchase" or "offline" map to the nearest one; if none fits, leave it "" and mention the banner text in notes.',
+    "",
+    "PRODUCT / FORMAT (productFormat) \u2014 use one of: " + productFormats.filter((t) => t !== "Other").join(", ") + " \u2014 only if the template says so.",
+    "",
+    "SOURCE \u2014 the store / platform / partner named in the template. If it matches one of these, use that exact spelling; otherwise copy the template's own: " + sources.filter((t) => t !== "Other").join(", ") + ".",
+    "",
+    `NOTES \u2014 the template credit if visible (e.g. "Template: @inateezna"), plus anything notable you couldn't put in another field. Otherwise "".`,
+    "",
+    `Leave a field "" (or [] for the lists) rather than guessing when it isn't shown or legible.`
+  ].join("\n");
 }
-
-Leave any field blank ("") rather than guessing if it isn't legible or shown.`;
 function toTags(v) {
   if (Array.isArray(v)) return v;
   if (v) return [v];
@@ -572,6 +611,45 @@ function linkifyText(text) {
     }
     return /* @__PURE__ */ React.createElement(React.Fragment, { key: i }, /* @__PURE__ */ React.createElement("a", { href: url, target: "_blank", rel: "noopener noreferrer", style: { color: theme.plum, textDecoration: "underline" } }, url), trail);
   });
+}
+function looseKey(v) {
+  return normVal(v).replace(/[.'’`"]/g, "").replace(/\s*:\s*/g, ":");
+}
+const ATEEZ_ABBREVIATIONS = { hj: "Hongjoong", sh: "Seonghwa", yh: "Yunho", ys: "Yeosang", sn: "San", mg: "Mingi", wy: "Wooyoung", jh: "Jongho" };
+function canonicalMemberName(name, group) {
+  const t = (name || "").toString().trim();
+  if (!t) return "";
+  const k = normVal(t);
+  const isAteez = !group || normVal(group) === "ateez";
+  if (isAteez && ATEEZ_ABBREVIATIONS[k]) return ATEEZ_ABBREVIATIONS[k];
+  if (isAteez) {
+    const known = ATEEZ_MEMBER_ORDER.find((m) => normVal(m) === k);
+    if (known) return known;
+  }
+  return t;
+}
+function canonicalAlbumFor(album, existingAlbums) {
+  const key = looseKey(album);
+  if (!key) return album;
+  const mine = existingAlbums.find((a) => looseKey(a) === key);
+  if (mine) return mine;
+  const seed = [...Object.keys(RELEASE_TO_COLLECTION_LINE), ...Object.keys(TOUR_FANMEETING_MAP)].find((t) => looseKey(t) === key);
+  return seed || album;
+}
+function taxonomyFor(album) {
+  const key = looseKey(album);
+  if (!key) return null;
+  const releaseHit = Object.keys(RELEASE_TO_COLLECTION_LINE).find((t) => looseKey(t) === key);
+  if (releaseHit) return { releaseCategory: RELEASE_TO_COLLECTION_LINE[releaseHit].cat, collectionLine: RELEASE_TO_COLLECTION_LINE[releaseHit].line };
+  const tourHit = Object.keys(TOUR_FANMEETING_MAP).find((t) => looseKey(t) === key);
+  if (tourHit) return { releaseCategory: "Concert / Tour", collectionLine: TOUR_FANMEETING_MAP[tourHit] };
+  return null;
+}
+function sameCardLoose(a, b) {
+  const eq = (x, y) => !normVal(x) || !normVal(y) || normVal(x) === normVal(y);
+  const membersKey = (c) => cardMembers(c).map(normVal).sort().join("&");
+  const versionKey = (c) => toTags(c.versionDetail).map(looseKey).sort().join("+");
+  return eq(a.group, b.group) && membersKey(a) === membersKey(b) && looseKey(a.album) === looseKey(b.album) && versionKey(a) === versionKey(b) && eq(a.itemType, b.itemType) && eq(a.productFormat, b.productFormat) && eq(a.category, b.category);
 }
 const CROP_RATIO = 85 / 55;
 function defaultCropFor(natW, natH) {
@@ -1297,6 +1375,7 @@ function PhotocardTracker({ isOwner = true } = {}) {
   const [bulkCreateText, setBulkCreateText] = useState("");
   const [bulkCreateError, setBulkCreateError] = useState("");
   const [promptCopied, setPromptCopied] = useState(false);
+  const [bulkCreateOverrides, setBulkCreateOverrides] = useState({});
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [view, setView] = useState("main");
   const [statsPeriod, setStatsPeriod] = useState("month");
@@ -2435,51 +2514,103 @@ function PhotocardTracker({ isOwner = true } = {}) {
     URL.revokeObjectURL(url);
   }
   function parseBulkCreateInput(text) {
+    const start = text.indexOf("[");
+    const end = text.lastIndexOf("]");
+    const body = start >= 0 && end > start ? text.slice(start, end + 1) : text;
     let raw;
     try {
-      raw = JSON.parse(text);
+      raw = JSON.parse(body);
     } catch (e) {
       return { rows: [], error: "Couldn't read that as JSON \u2014 check for a stray comma or missing bracket." };
     }
     if (!Array.isArray(raw)) return { rows: [], error: "Expected a JSON array of cards (e.g. [ {...}, {...} ])." };
-    const rows = raw.filter((r) => r && typeof r === "object").map((r) => ({
-      group: (r.group || "").toString().trim(),
-      member: (r.member || "").toString().trim(),
-      album: (r.album || "").toString().trim(),
-      itemType: (r.itemType || "").toString().trim(),
-      productFormat: (r.productFormat || "").toString().trim(),
-      category: (r.category || "").toString().trim(),
-      versionDetail: toTags(r.versionDetail).map((v) => v.toString().trim()).filter(Boolean),
-      releaseDate: (r.releaseDate || "").toString().trim(),
-      source: (r.source || "").toString().trim(),
-      characterSeries: (r.characterSeries || "").toString().trim(),
-      character: (r.character || "").toString().trim(),
-      notes: (r.notes || "").toString().trim()
-    })).filter((r) => r.group || r.member || r.album || r.versionDetail.length > 0);
+    const existingAlbums = [...new Set(cards.map((c) => c.album).filter(Boolean))];
+    const str = (v) => (v || "").toString().trim();
+    const rows = raw.filter((r) => r && typeof r === "object").map((r) => {
+      const group = str(r.group);
+      const listed = Array.isArray(r.members) ? r.members.map(str).filter(Boolean) : [];
+      const mainName = str(r.member) || listed[0] || "";
+      const extra = [...listed.length && !str(r.member) ? listed.slice(1) : listed, ...toTags(r.coMembers).flatMap((m) => str(m).split(/\s*(?:,|&|\/|\band\b)\s*/i))];
+      const member = canonicalMemberName(mainName, group);
+      const coMembers = [];
+      extra.map((m) => canonicalMemberName(m, group)).filter(Boolean).forEach((m) => {
+        if (normVal(m) !== normVal(member) && !coMembers.some((x) => normVal(x) === normVal(m))) coMembers.push(m);
+      });
+      const album = canonicalAlbumFor(str(r.album), existingAlbums);
+      const tax = taxonomyFor(album);
+      return {
+        group,
+        member,
+        coMembers,
+        album,
+        releaseCategory: str(r.releaseCategory) || (tax ? tax.releaseCategory : ""),
+        collectionLine: str(r.collectionLine) || (tax ? tax.collectionLine : ""),
+        itemType: str(r.itemType),
+        productFormat: str(r.productFormat),
+        category: str(r.category),
+        versionDetail: toTags(r.versionDetail).map(str).filter(Boolean),
+        releaseDate: str(r.releaseDate),
+        source: str(r.source),
+        characterSeries: str(r.characterSeries),
+        character: str(r.character),
+        notes: str(r.notes)
+      };
+    }).filter((r) => r.group || r.member || r.album || r.versionDetail.length > 0);
     if (rows.length === 0) return { rows: [], error: "Found JSON, but no usable card rows in it." };
     return { rows, error: "" };
   }
-  async function createBulkCards() {
+  const bulkPreview = useMemo(() => {
+    if (!bulkCreateOpen || !bulkCreateText.trim()) return null;
     const { rows, error } = parseBulkCreateInput(bulkCreateText);
-    if (error) {
-      setBulkCreateError(error);
+    if (error) return { error, items: [] };
+    const items = rows.map((row, idx) => {
+      let status = "new";
+      if (cards.some((c) => sameCardLoose(c, row))) status = "existing";
+      else if (rows.slice(0, idx).some((prev) => sameCardLoose(prev, row))) status = "repeat";
+      return { idx, row, status };
+    });
+    return { error: "", items };
+  }, [bulkCreateOpen, bulkCreateText, cards]);
+  const bulkRowOn = (it) => bulkCreateOverrides[it.idx] !== void 0 ? bulkCreateOverrides[it.idx] : it.status === "new";
+  async function createBulkCards() {
+    if (!bulkPreview) {
+      setBulkCreateError("Paste the JSON reply first.");
       return;
     }
-    const newCards = rows.map((r) => ({ ...emptyForm, ...r, id: uid(), createdAt: Date.now() }));
+    if (bulkPreview.error) {
+      setBulkCreateError(bulkPreview.error);
+      return;
+    }
+    const picked = bulkPreview.items.filter(bulkRowOn);
+    if (picked.length === 0) {
+      setBulkCreateError("Nothing is ticked \u2014 tick at least one card to create.");
+      return;
+    }
+    const skipped = bulkPreview.items.length - picked.length;
+    const now = Date.now();
+    const newCards = picked.map((it, i) => ({
+      ...emptyForm,
+      ...it.row,
+      copies: [],
+      id: uid(),
+      createdAt: now + (picked.length - 1 - i),
+      updatedAt: now
+    }));
     const next = [...cards, ...newCards];
     setCards(next);
     setBulkCreateOpen(false);
     setBulkCreateText("");
     setBulkCreateError("");
+    setBulkCreateOverrides({});
     const ok = await persist(next);
     if (ok) {
-      setToast(`${newCards.length} card${newCards.length !== 1 ? "s" : ""} created \u2014 add photos when ready.`);
-      setTimeout(() => setToast(""), 3e3);
+      setToast(`${newCards.length} card${newCards.length !== 1 ? "s" : ""} created${skipped > 0 ? ` (${skipped} skipped)` : ""} \u2014 add photos when ready.`);
+      setTimeout(() => setToast(""), 3500);
     }
   }
   async function copyBulkCreatePrompt() {
     try {
-      await navigator.clipboard.writeText(BULK_CREATE_PROMPT);
+      await navigator.clipboard.writeText(buildBulkCreatePrompt({ itemTypes: itemTypeOptions, categories, productFormats: productFormatOptions, sources: sourceOptions, albums: allAlbums }));
       setPromptCopied(true);
       setTimeout(() => setPromptCopied(false), 2e3);
     } catch (e) {
@@ -3061,20 +3192,54 @@ function PhotocardTracker({ isOwner = true } = {}) {
         isOwned(selectedCard) && selectedCard.copies && selectedCard.copies.length > 0 ? ` \xB7 ${selectedCard.copies.length}` : ""
       ))), /* @__PURE__ */ React.createElement("p", { className: "text-sm italic mb-4", style: { color: theme.accent } }, selectedCard.group, selectedCard.album ? ` \xB7 ${selectedCard.album}` : ""), selectedCard.updatedAt && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] -mt-3 mb-4", style: { color: theme.muted } }, "Last edited ", new Date(selectedCard.updatedAt).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })), isOwner && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-4" }, /* @__PURE__ */ React.createElement("button", { onClick: () => openEdit(selectedCard), className: "flex-1 py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1.5", style: { background: theme.accent, color: theme.bg } }, /* @__PURE__ */ React.createElement(Pencil, { size: 12 }), " Edit card"), (selectedCard.status === "Purchased" || selectedCard.status === "Owned") && /* @__PURE__ */ React.createElement("button", { onClick: () => quickAddCopy(selectedCard.id), className: "flex-1 py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1.5", style: { border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Plus, { size: 12 }), " Add copy"), /* @__PURE__ */ React.createElement("button", { onClick: () => openDuplicate(selectedCard), title: "Create this card for other members", className: "flex-1 py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1.5", style: { border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(CopyIcon, { size: 12 }), " Duplicate"), /* @__PURE__ */ React.createElement("button", { onClick: () => deleteCard(selectedCard.id), className: "py-1.5 px-2.5 rounded text-xs flex items-center gap-1.5", style: { color: "#A24A3E", border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement(Trash2, { size: 12 }))), /* @__PURE__ */ React.createElement("dl", { className: "mb-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4" }, /* @__PURE__ */ React.createElement(DetailRow, { label: "Group", value: selectedCard.group }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Release Cat.", value: selectedCard.releaseCategory }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Collection / Line", value: selectedCard.collectionLine }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Item type", value: selectedCard.itemType }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Product", value: selectedCard.productFormat }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Version", value: toTags(selectedCard.versionDetail).length > 0 ? toTags(selectedCard.versionDetail).join(" \xB7 ") : "" }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Character", value: selectedCard.character ? selectedCard.characterSeries ? `${selectedCard.character} (${selectedCard.characterSeries})` : selectedCard.character : selectedCard.characterSeries }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Release date", value: formatFlexDate(selectedCard.releaseDate) }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Source", value: selectedCard.source }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Card type", value: selectedCard.category }), /* @__PURE__ */ React.createElement(DetailRow, { label: "Sold", value: formatFlexDate(selectedCard.dateSold) })), (selectedCard.copies || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline justify-between mb-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-semibold pc-font-display" }, "Copies"), spent > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-xs", style: { color: theme.muted, fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace" } }, "\u20B1", formatCurrency(spent), " total")), /* @__PURE__ */ React.createElement("div", null, selectedCard.copies.map((c) => /* @__PURE__ */ React.createElement("div", { key: c.id, className: "flex items-baseline justify-between gap-2 py-2 text-sm", style: { borderBottom: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("span", { className: "truncate" }, c.seller || "Unknown seller"), /* @__PURE__ */ React.createElement("span", { className: "shrink-0", style: { color: theme.muted } }, c.date ? formatFlexDate(c.date) : "no date"), c.price ? /* @__PURE__ */ React.createElement("span", { className: "shrink-0", style: { fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace" } }, "\u20B1", formatCurrency(parsePrice(c.price))) : /* @__PURE__ */ React.createElement("span", { className: "shrink-0" }))))), selectedCard.notes && /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-4", style: { color: theme.muted, overflowWrap: "anywhere" } }, /* @__PURE__ */ React.createElement("span", { style: { color: theme.text } }, "Notes:"), " ", linkifyText(selectedCard.notes)))
     ));
-  })(), cropCard && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "rgba(0,0,0,0.75)" }, onClick: closeQuickCrop }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-sm rounded-2xl p-5", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Adjust ", cropSide, " crop"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeQuickCrop }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement(ImageCropper, { src: resolveImageUrl(cropSide === "front" ? cropCard.frontImage : cropCard.backImage), crop: cropDraft, onChange: setCropDraft }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-5" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeQuickCrop, className: "flex-1 py-2 rounded-full text-sm font-medium", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveQuickCrop, className: "flex-1 py-2 rounded-full text-sm font-medium", style: { background: theme.accent, color: theme.bg } }, "Save")))), selectMode && selectedIds.size > 0 && /* @__PURE__ */ React.createElement("div", { className: "fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-4 py-2.5 rounded-full shadow-lg", style: { background: theme.surface, border: `1px solid ${theme.border}`, boxShadow: "0 8px 24px rgba(0,0,0,0.12)" } }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-medium pl-1" }, selectedIds.size, " selected"), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5", style: { background: theme.border } }), /* @__PURE__ */ React.createElement("button", { onClick: () => setBulkOpen(true), className: "px-3 py-1.5 rounded-full text-xs font-medium", style: { background: theme.accent, color: theme.bg } }, "Bulk edit"), /* @__PURE__ */ React.createElement("button", { onClick: bulkDelete, className: "px-3 py-1.5 rounded-full text-xs font-medium", style: { color: "#A24A3E", border: `1px solid ${theme.border}` } }, "Delete")), bulkOpen && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "rgba(0,0,0,0.75)" }, onClick: () => setBulkOpen(false) }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-sm rounded-2xl p-5 max-h-[85vh] overflow-y-auto pc-scroll", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Bulk edit ", selectedIds.size, " card", selectedIds.size !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBulkOpen(false) }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-3", style: { color: theme.muted } }, "Leave a field blank to keep each card's existing value there."), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Group", value: bulkForm.group, options: groups, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, group: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Member", value: bulkForm.member, options: allMembers, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, member: v })) })), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Release / Edition", value: bulkForm.album, options: allAlbums, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, album: v })) }), /* @__PURE__ */ React.createElement(Field, { label: "Release Category" }, /* @__PURE__ */ React.createElement("select", { value: bulkForm.releaseCategory, onChange: (e) => setBulkForm((f) => ({ ...f, releaseCategory: e.target.value })), className: "w-full px-2.5 py-2 rounded text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Leave unchanged"), RELEASE_CATEGORIES.map((c) => /* @__PURE__ */ React.createElement("option", { key: c, value: c }, c)))), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Collection / Line", value: bulkForm.collectionLine, options: bulkForm.releaseCategory ? RELEASE_CATEGORY_LINES[bulkForm.releaseCategory] : allCollectionLines, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, collectionLine: v })) }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Item Type", value: bulkForm.itemType, options: itemTypeOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, itemType: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Product / Format", value: bulkForm.productFormat, options: productFormatOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, productFormat: v })) })), /* @__PURE__ */ React.createElement(TagMultiSelect, { label: "Version / edition", values: bulkForm.versionDetail, options: versionDetailOptions, onChange: (v) => setBulkForm((f) => ({ ...f, versionDetail: v })), placeholder: "Leave blank to skip" }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Source / Retailer / Partner", value: bulkForm.source, options: sourceOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, source: v })) }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Card Type / Benefit", value: bulkForm.category, options: categories, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, category: v })) }), /* @__PURE__ */ React.createElement(Field, { label: "Date released" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: bulkForm.releaseDate, onChange: (v) => setBulkForm((f) => ({ ...f, releaseDate: v })) }))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character Series", value: bulkForm.characterSeries, options: characterSeriesOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, characterSeries: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character", value: bulkForm.character, options: characterOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, character: v })) })), /* @__PURE__ */ React.createElement(Field, { label: "Status" }, /* @__PURE__ */ React.createElement("select", { value: bulkForm.status, onChange: (e) => setBulkForm((f) => ({ ...f, status: e.target.value })), className: "w-full px-2.5 py-2 rounded-lg text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Leave unchanged"), STATUSES.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.value, value: s.value }, s.value)))), /* @__PURE__ */ React.createElement(Field, { label: "Date sold (optional)" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: bulkForm.dateSold, onChange: (v) => setBulkForm((f) => ({ ...f, dateSold: v })) })), /* @__PURE__ */ React.createElement(Field, { label: "Notes" }, /* @__PURE__ */ React.createElement("textarea", { value: bulkForm.notes, onChange: (e) => setBulkForm((f) => ({ ...f, notes: e.target.value })), rows: 2, placeholder: "Leave blank to skip", className: "w-full px-2.5 py-2 rounded-lg text-sm resize-none" }))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: applyBulkEdit, className: "w-full py-2 rounded-full text-sm font-medium mt-5", style: { background: theme.accent, color: theme.bg } }, "Apply to ", selectedIds.size, " card", selectedIds.size !== 1 ? "s" : ""))), bulkCreateOpen && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "rgba(0,0,0,0.75)" }, onClick: () => setBulkCreateOpen(false) }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-md rounded-2xl p-5 max-h-[85vh] overflow-y-auto pc-scroll", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Bulk create from list"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBulkCreateOpen(false) }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-3", style: { color: theme.muted } }, "Creates new cards from pasted JSON \u2014 no photos, just the details filled in. Add photos to each one afterward."), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg p-3 mb-3", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-2", style: { color: theme.muted } }, "1. Copy this prompt. 2. Paste it into a new Claude chat along with a photo of your template. 3. Paste Claude's reply below."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: copyBulkCreatePrompt, className: "w-full py-1.5 rounded-full text-xs font-medium", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, promptCopied ? "Copied!" : "Copy extraction prompt")), /* @__PURE__ */ React.createElement(Field, { label: "Paste the JSON reply here" }, /* @__PURE__ */ React.createElement(
-    "textarea",
-    {
-      value: bulkCreateText,
-      onChange: (e) => {
-        setBulkCreateText(e.target.value);
-        setBulkCreateError("");
+  })(), cropCard && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "rgba(0,0,0,0.75)" }, onClick: closeQuickCrop }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-sm rounded-2xl p-5", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Adjust ", cropSide, " crop"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeQuickCrop }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement(ImageCropper, { src: resolveImageUrl(cropSide === "front" ? cropCard.frontImage : cropCard.backImage), crop: cropDraft, onChange: setCropDraft }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-5" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeQuickCrop, className: "flex-1 py-2 rounded-full text-sm font-medium", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveQuickCrop, className: "flex-1 py-2 rounded-full text-sm font-medium", style: { background: theme.accent, color: theme.bg } }, "Save")))), selectMode && selectedIds.size > 0 && /* @__PURE__ */ React.createElement("div", { className: "fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-4 py-2.5 rounded-full shadow-lg", style: { background: theme.surface, border: `1px solid ${theme.border}`, boxShadow: "0 8px 24px rgba(0,0,0,0.12)" } }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-medium pl-1" }, selectedIds.size, " selected"), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5", style: { background: theme.border } }), /* @__PURE__ */ React.createElement("button", { onClick: () => setBulkOpen(true), className: "px-3 py-1.5 rounded-full text-xs font-medium", style: { background: theme.accent, color: theme.bg } }, "Bulk edit"), /* @__PURE__ */ React.createElement("button", { onClick: bulkDelete, className: "px-3 py-1.5 rounded-full text-xs font-medium", style: { color: "#A24A3E", border: `1px solid ${theme.border}` } }, "Delete")), bulkOpen && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "rgba(0,0,0,0.75)" }, onClick: () => setBulkOpen(false) }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-sm rounded-2xl p-5 max-h-[85vh] overflow-y-auto pc-scroll", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Bulk edit ", selectedIds.size, " card", selectedIds.size !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBulkOpen(false) }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-3", style: { color: theme.muted } }, "Leave a field blank to keep each card's existing value there."), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Group", value: bulkForm.group, options: groups, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, group: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Member", value: bulkForm.member, options: allMembers, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, member: v })) })), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Release / Edition", value: bulkForm.album, options: allAlbums, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, album: v })) }), /* @__PURE__ */ React.createElement(Field, { label: "Release Category" }, /* @__PURE__ */ React.createElement("select", { value: bulkForm.releaseCategory, onChange: (e) => setBulkForm((f) => ({ ...f, releaseCategory: e.target.value })), className: "w-full px-2.5 py-2 rounded text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Leave unchanged"), RELEASE_CATEGORIES.map((c) => /* @__PURE__ */ React.createElement("option", { key: c, value: c }, c)))), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Collection / Line", value: bulkForm.collectionLine, options: bulkForm.releaseCategory ? RELEASE_CATEGORY_LINES[bulkForm.releaseCategory] : allCollectionLines, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, collectionLine: v })) }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Item Type", value: bulkForm.itemType, options: itemTypeOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, itemType: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Product / Format", value: bulkForm.productFormat, options: productFormatOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, productFormat: v })) })), /* @__PURE__ */ React.createElement(TagMultiSelect, { label: "Version / edition", values: bulkForm.versionDetail, options: versionDetailOptions, onChange: (v) => setBulkForm((f) => ({ ...f, versionDetail: v })), placeholder: "Leave blank to skip" }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Source / Retailer / Partner", value: bulkForm.source, options: sourceOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, source: v })) }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Card Type / Benefit", value: bulkForm.category, options: categories, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, category: v })) }), /* @__PURE__ */ React.createElement(Field, { label: "Date released" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: bulkForm.releaseDate, onChange: (v) => setBulkForm((f) => ({ ...f, releaseDate: v })) }))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character Series", value: bulkForm.characterSeries, options: characterSeriesOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, characterSeries: v })) }), /* @__PURE__ */ React.createElement(SelectOrNew, { label: "Character", value: bulkForm.character, options: characterOptions, placeholder: "Leave blank to skip", onChange: (v) => setBulkForm((f) => ({ ...f, character: v })) })), /* @__PURE__ */ React.createElement(Field, { label: "Status" }, /* @__PURE__ */ React.createElement("select", { value: bulkForm.status, onChange: (e) => setBulkForm((f) => ({ ...f, status: e.target.value })), className: "w-full px-2.5 py-2 rounded-lg text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Leave unchanged"), STATUSES.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.value, value: s.value }, s.value)))), /* @__PURE__ */ React.createElement(Field, { label: "Date sold (optional)" }, /* @__PURE__ */ React.createElement(FreeformDateInput, { value: bulkForm.dateSold, onChange: (v) => setBulkForm((f) => ({ ...f, dateSold: v })) })), /* @__PURE__ */ React.createElement(Field, { label: "Notes" }, /* @__PURE__ */ React.createElement("textarea", { value: bulkForm.notes, onChange: (e) => setBulkForm((f) => ({ ...f, notes: e.target.value })), rows: 2, placeholder: "Leave blank to skip", className: "w-full px-2.5 py-2 rounded-lg text-sm resize-none" }))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: applyBulkEdit, className: "w-full py-2 rounded-full text-sm font-medium mt-5", style: { background: theme.accent, color: theme.bg } }, "Apply to ", selectedIds.size, " card", selectedIds.size !== 1 ? "s" : ""))), bulkCreateOpen && (() => {
+    const items = bulkPreview && !bulkPreview.error ? bulkPreview.items : [];
+    const newCount = items.filter((it) => it.status === "new").length;
+    const existingCount = items.filter((it) => it.status === "existing").length;
+    const repeatCount = items.filter((it) => it.status === "repeat").length;
+    const pickedCount = items.filter(bulkRowOn).length;
+    const closeBulkCreate = () => {
+      setBulkCreateOpen(false);
+      setBulkCreateError("");
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "rgba(0,0,0,0.75)" }, onClick: closeBulkCreate }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), className: "w-full sm:max-w-lg rounded-xl p-5 max-h-[88vh] overflow-y-auto pc-scroll", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-lg", style: { fontWeight: 600 } }, "Bulk create from list"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeBulkCreate }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-3", style: { color: theme.muted } }, "Creates new cards from a fan-made template \u2014 details only, no photos. You'll see every card it found first, with likely repeats flagged, before anything is created."), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg p-3 mb-3", style: { background: theme.surfaceAlt, border: `1px solid ${theme.border}` } }, /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-2", style: { color: theme.muted } }, "1. Copy this prompt. 2. Paste it into a Claude chat along with a screenshot of the template. 3. Paste Claude's reply below."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: copyBulkCreatePrompt, className: "w-full py-1.5 rounded text-xs font-medium", style: { background: theme.surface, border: `1px solid ${theme.border}` } }, promptCopied ? "Copied!" : "Copy extraction prompt")), /* @__PURE__ */ React.createElement(Field, { label: "Paste the JSON reply here" }, /* @__PURE__ */ React.createElement(
+      "textarea",
+      {
+        value: bulkCreateText,
+        onChange: (e) => {
+          setBulkCreateText(e.target.value);
+          setBulkCreateError("");
+          setBulkCreateOverrides({});
+        },
+        rows: 6,
+        placeholder: '[{"group":"ATEEZ","member":"Mingi","coMembers":[],"album":"GOLDEN HOUR : Part.5","itemType":"Photocard","versionDetail":["A ver. A"], ...}]',
+        className: "w-full px-2.5 py-2 rounded text-xs resize-none",
+        style: { fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace" }
+      }
+    )), bulkPreview && bulkPreview.error && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1.5", style: { color: "#A24A3E" } }, bulkPreview.error), items.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-medium" }, items.length, " card", items.length !== 1 ? "s" : "", " found \xB7 ", newCount, " new", existingCount > 0 && /* @__PURE__ */ React.createElement("span", { style: { color: theme.muted } }, " \xB7 ", existingCount, " already in your binder"), repeatCount > 0 && /* @__PURE__ */ React.createElement("span", { style: { color: theme.muted } }, " \xB7 ", repeatCount, " repeated in this paste")), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "text-[11px] underline",
+        style: { color: theme.muted },
+        onClick: () => setBulkCreateOverrides(Object.fromEntries(items.map((it) => [it.idx, it.status === "new"])))
       },
-      rows: 8,
-      placeholder: '[{"group":"ATEEZ","member":"Mingi","album":"GOLDEN HOUR : Part.3","itemType":"Photocard","versionDetail":"A Ver 1", ...}]',
-      className: "w-full px-2.5 py-2 rounded-lg text-xs resize-none",
-      style: { fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace" }
-    }
-  )), bulkCreateError && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1.5", style: { color: "#A24A3E" } }, bulkCreateError), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: createBulkCards, disabled: !bulkCreateText.trim(), className: "w-full py-2 rounded-full text-sm font-medium mt-4 disabled:opacity-40", style: { background: theme.accent, color: theme.bg } }, "Create cards"))), dupCard && (() => {
+      "New only"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "text-[11px] underline",
+        style: { color: theme.muted },
+        onClick: () => setBulkCreateOverrides(Object.fromEntries(items.map((it) => [it.idx, true])))
+      },
+      "All"
+    ))), /* @__PURE__ */ React.createElement("div", { className: "rounded overflow-y-auto pc-scroll", style: { maxHeight: "38vh", border: `1px solid ${theme.border}` } }, items.map((it) => {
+      const on = bulkRowOn(it);
+      const versions = toTags(it.row.versionDetail).join(" \xB7 ");
+      return /* @__PURE__ */ React.createElement("label", { key: it.idx, className: "flex items-start gap-2 px-2.5 py-1.5 cursor-pointer", style: { borderBottom: `1px solid ${theme.border}`, opacity: on ? 1 : 0.6 } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: on, onChange: () => setBulkCreateOverrides((o) => ({ ...o, [it.idx]: !on })), className: "mt-0.5 shrink-0", style: { accentColor: theme.accent } }), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-medium truncate" }, [memberLabel(it.row) || "(no member)", it.row.album].filter(Boolean).join(" \xB7 "), versions ? ` \xB7 ${versions}` : ""), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] truncate", style: { color: theme.muted } }, [it.row.itemType, it.row.category, it.row.source].filter(Boolean).join(" \xB7 ") || "\u2014")), it.status !== "new" && /* @__PURE__ */ React.createElement("span", { className: "shrink-0 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wide", style: { border: `1px dashed ${theme.border}`, color: theme.muted } }, it.status === "existing" ? "Already in binder" : "Repeat in paste"));
+    }))), bulkCreateError && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1.5", style: { color: "#A24A3E" } }, bulkCreateError), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: createBulkCards, disabled: items.length === 0 || pickedCount === 0, className: "w-full py-2 rounded text-sm font-medium mt-4 disabled:opacity-40", style: { background: theme.accent, color: theme.bg } }, items.length > 0 ? `Create ${pickedCount} card${pickedCount !== 1 ? "s" : ""}` : "Create cards")));
+  })(), dupCard && (() => {
     const cands = computeDupCandidates(dupCard, dupExtra);
     const available = cands.filter((c) => !c.exists);
     const pickedCount = available.filter((c) => dupMembers.has(c.member)).length;
