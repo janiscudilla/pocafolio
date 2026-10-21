@@ -88,6 +88,8 @@ const Upload = (p) => /* @__PURE__ */ React.createElement(Icon, { ...p }, /* @__
 const ChevronDown = (p) => /* @__PURE__ */ React.createElement(Icon, { ...p }, /* @__PURE__ */ React.createElement("polyline", { points: "6 9 12 15 18 9" }));
 const RotateCcw = (p) => /* @__PURE__ */ React.createElement(Icon, { ...p }, /* @__PURE__ */ React.createElement("polyline", { points: "1 4 1 10 7 10" }), /* @__PURE__ */ React.createElement("path", { d: "M3.51 15a9 9 0 1 0 2.13-9.36L1 10" }));
 const LogInOut = (p) => /* @__PURE__ */ React.createElement(Icon, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" }), /* @__PURE__ */ React.createElement("polyline", { points: "16 17 21 12 16 7" }), /* @__PURE__ */ React.createElement("line", { x1: "21", y1: "12", x2: "9", y2: "12" }));
+const Sun = (p) => /* @__PURE__ */ React.createElement(Icon, { ...p }, /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "4" }), /* @__PURE__ */ React.createElement("path", { d: "M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" }));
+const Moon = (p) => /* @__PURE__ */ React.createElement(Icon, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" }));
 const Settings = (p) => /* @__PURE__ */ React.createElement(Icon, { ...p }, /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "3" }), /* @__PURE__ */ React.createElement("path", { d: "M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" }));
 // Turns a Firebase sign-in failure into something she can act on. The popup flow fails in a handful of
 // predictable ways, and the raw error code alone isn't self-explanatory.
@@ -113,6 +115,7 @@ const SIGN_IN_HINT_MS = 12000;
 function AppShell() {
   const [user, setUser] = useState(void 0);
   const [signInNote, setSignInNote] = useState(null);
+  const [colorMode, setColorMode] = useState(() => localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light");
   useEffect(() => {
     const unsub = auth.onAuthStateChanged((u) => setUser(u));
     return unsub;
@@ -133,8 +136,15 @@ function AppShell() {
       clearTimeout(hintTimer);
     }
   }
+  function toggleColorMode() {
+    setColorMode((current) => {
+      const next = current === "light" ? "dark" : "light";
+      localStorage.setItem(THEME_STORAGE_KEY, next);
+      return next;
+    });
+  }
   const isOwner = !!(user && user.uid === OWNER_UID);
-  return /* @__PURE__ */ React.createElement("div", { style: { position: "relative" } }, /* @__PURE__ */ React.createElement("div", { style: { position: "fixed", top: 10, right: 10, zIndex: 40 } }, user !== void 0 && /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { style: { position: "relative", minHeight: "100%", ...themeVariables(colorMode) } }, /* @__PURE__ */ React.createElement("div", { style: { position: "fixed", top: 10, right: 48, zIndex: 40 } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: toggleColorMode, title: colorMode === "light" ? "Switch to dark mode" : "Switch to light mode", "aria-label": colorMode === "light" ? "Switch to dark mode" : "Switch to light mode", style: { width: 30, height: 30, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: theme.surfaceAlt, border: `1px solid ${theme.border}`, color: theme.text } }, colorMode === "light" ? /* @__PURE__ */ React.createElement(Moon, { size: 14 }) : /* @__PURE__ */ React.createElement(Sun, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { style: { position: "fixed", top: 10, right: 10, zIndex: 40 } }, user !== void 0 && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: isOwner ? () => auth.signOut() : handleSignIn,
@@ -510,18 +520,15 @@ const STATUSES = [
   { value: "Owned", color: OWNED_COLOR },
   { value: "Sold", color: SOLD_COLOR }
 ];
-const theme = {
-  bg: "#F4F0E7",
-  surface: "#FFFFFF",
-  surfaceAlt: "#EDE6D8",
-  border: "#DDD2BE",
-  text: "#2A241E",
-  muted: "#8C8070",
-  accent: "#2A241E",
-  plum: "#4B3F52",
-  sage: "#5C6650",
-  mauve: "#6E4F52"
+const THEME_STORAGE_KEY = "pocafolio-theme";
+const THEMES = {
+  light: { bg: "#F4F0E7", surface: "#FFFFFF", surfaceAlt: "#EDE6D8", border: "#DDD2BE", text: "#2A241E", muted: "#8C8070", accent: "#2A241E", plum: "#4B3F52", sage: "#5C6650", mauve: "#6E4F52" },
+  dark: { bg: "#171513", surface: "#211E1B", surfaceAlt: "#2D2824", border: "#484039", text: "#F5EFE6", muted: "#B5A99B", accent: "#F5EFE6", plum: "#BCA9C6", sage: "#AAB69A", mauve: "#D29A9E" }
 };
+const theme = Object.fromEntries(Object.keys(THEMES.light).map((key) => [key, `var(--pc-${key})`]));
+function themeVariables(mode) {
+  return Object.fromEntries(Object.entries(THEMES[mode]).map(([key, value]) => [`--pc-${key}`, value]));
+}
 const PLACEHOLDER_PALETTE = ["#4B3F52", "#6E4F52", "#5C6650", "#5A4D3E"];
 function placeholderColorFor(id) {
   let h = 0;
