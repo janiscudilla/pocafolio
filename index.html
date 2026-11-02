@@ -15,6 +15,40 @@
 <style>
   html, body, #root { height: 100%; margin: 0; background: #F4F0E7; }
 </style>
+
+<style id="pc-mobile-card-detail-fix">
+/* Build 8: mobile-browser-only detail modal. Desktop styles are untouched. */
+@media (max-width: 639px) {
+  .pc-detail-overlay { align-items: flex-end; overflow: hidden; }
+  .pc-detail-modal {
+    height: min(88dvh, 780px); max-height: 88dvh !important;
+    min-height: 0; display: flex; flex-direction: column;
+    overflow: hidden; overscroll-behavior: contain;
+  }
+  .pc-detail-photo-panel {
+    flex: 0 0 auto; padding: 10px 12px 8px !important;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 0;
+  }
+  .pc-detail-photo {
+    width: 112px !important; height: auto !important;
+    aspect-ratio: 55 / 85 !important; max-height: none !important;
+    flex: none; margin: 0 auto !important;
+  }
+  .pc-detail-photo-panel > div:nth-child(2) { margin-top: 7px !important; }
+  .pc-detail-photo-panel > p { margin-top: 5px !important; }
+  .pc-detail-information {
+    flex: 1 1 0%; min-height: 0; padding: 14px 15px 26px !important;
+    overflow-y: auto !important; overflow-x: hidden;
+    -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  }
+  .pc-detail-information button { min-height: 32px; }
+}
+@media (max-width: 639px) and (max-height: 650px) {
+  .pc-detail-photo { width: 88px !important; }
+  .pc-detail-photo-panel { padding: 7px 10px 5px !important; }
+}
+</style>
 </head>
 <body>
 <div id="root"></div>
@@ -400,7 +434,7 @@ const DEFAULT_VERSION_DETAILS = [
   "Unit"
 ];
 const DEFAULT_CHARACTER_SERIES = ["ANITEEZ", "MIGHTEEZ", "Birthday Characters"];
-const BUILD_INFO = { number: 7, date: "Oct 17, 2026", note: "Duplicate warning: click a match to preview it without leaving the form" };
+const BUILD_INFO = { number: 8, date: "Nov 2, 2026", note: "Compact mobile card details; desktop unchanged" };
 const RELEASE_CATEGORIES = ["Music Release", "Merch Collection", "Concert / Tour"];
 const RELEASE_CATEGORY_LINES = {
   "Music Release": ["Full Album", "Mini Album", "Single", "Special Album", "Japan Release"],
@@ -3257,15 +3291,15 @@ Save this as a new card anyway?`)) return;
     const peek = peekMode;
     const badge = cardBadge(selectedCard);
     const spent = sumSpent(selectedCard);
-    return /* @__PURE__ */ React.createElement("div", { className: `fixed inset-0 ${peek ? "z-[60]" : "z-50"} flex items-end sm:items-center justify-center p-0 sm:p-4`, style: { background: "rgba(0,0,0,0.6)" }, onClick: () => setSelectedCard(null) }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: `pc-detail-overlay fixed inset-0 ${peek ? "z-[60]" : "z-50"} flex items-end sm:items-center justify-center p-0 sm:p-4`, style: { background: "rgba(0,0,0,0.6)" }, onClick: () => setSelectedCard(null) }, /* @__PURE__ */ React.createElement(
       "div",
       {
         onClick: (e) => e.stopPropagation(),
-        className: "relative w-full sm:max-w-md md:max-w-3xl max-h-[90vh] rounded-t-xl sm:rounded-xl overflow-hidden flex flex-col md:flex-row",
+        className: "pc-detail-modal relative w-full sm:max-w-md md:max-w-3xl max-h-[90vh] rounded-t-xl sm:rounded-xl overflow-hidden flex flex-col md:flex-row",
         style: { background: theme.surface, border: `1px solid ${theme.border}` }
       },
       /* @__PURE__ */ React.createElement("button", { onClick: () => setSelectedCard(null), className: "absolute top-3 right-3 z-10 w-7 h-7 flex items-center justify-center", style: { background: "rgba(0,0,0,0.35)", borderRadius: 4 } }, /* @__PURE__ */ React.createElement(X, { size: 16, color: "#fff" })),
-      /* @__PURE__ */ React.createElement("div", { className: "shrink-0 p-4 md:p-5 md:w-72 lg:w-80 flex flex-col justify-center", style: { background: theme.plum } }, /* @__PURE__ */ React.createElement("div", { style: { aspectRatio: "55 / 85", maxHeight: "55vh", margin: "0 auto", background: "rgba(255,255,255,0.08)", position: "relative", borderRadius: 10 }, className: "overflow-hidden flex items-center justify-center shrink-0 w-full" }, selectedCard.category && /* @__PURE__ */ React.createElement("span", { className: "pc-label absolute top-2 left-2 z-10 text-[10px] font-semibold", style: { color: "rgba(255,255,255,0.75)" } }, selectedCard.category), (detailSide === "front" ? selectedCard.frontImage : selectedCard.backImage) ? /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "pc-detail-photo-panel shrink-0 p-4 md:p-5 md:w-72 lg:w-80 flex flex-col justify-center", style: { background: theme.plum } }, /* @__PURE__ */ React.createElement("div", { style: { aspectRatio: "55 / 85", maxHeight: "55vh", margin: "0 auto", background: "rgba(255,255,255,0.08)", position: "relative", borderRadius: 10 }, className: "pc-detail-photo overflow-hidden flex items-center justify-center shrink-0 w-full" }, selectedCard.category && /* @__PURE__ */ React.createElement("span", { className: "pc-label absolute top-2 left-2 z-10 text-[10px] font-semibold", style: { color: "rgba(255,255,255,0.75)" } }, selectedCard.category), (detailSide === "front" ? selectedCard.frontImage : selectedCard.backImage) ? /* @__PURE__ */ React.createElement(
         CroppedImage,
         {
           src: resolveImageUrl(detailSide === "front" ? selectedCard.frontImage : selectedCard.backImage),
@@ -3275,7 +3309,7 @@ Save this as a new card anyway?`)) return;
           }
         }
       ) : /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center gap-1", style: { color: "rgba(255,255,255,0.6)" } }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 24 }), /* @__PURE__ */ React.createElement("span", { className: "text-xs" }, "No ", detailSide, " image")), isOwner && !peek && (detailSide === "front" ? selectedCard.frontImage : selectedCard.backImage) && /* @__PURE__ */ React.createElement("button", { onClick: () => openQuickCrop(selectedCard, detailSide), className: "absolute bottom-2 right-2 w-7 h-7 rounded-full flex items-center justify-center", style: { background: "rgba(0,0,0,0.5)" }, title: `Adjust ${detailSide} crop` }, /* @__PURE__ */ React.createElement(Pencil, { size: 12, color: "#fff" }))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex rounded overflow-hidden text-[11px]", style: { border: `1px solid rgba(255,255,255,0.3)` } }, /* @__PURE__ */ React.createElement("button", { onClick: () => setDetailSide("front"), className: "px-3 py-1 font-medium", style: { background: detailSide === "front" ? theme.bg : "transparent", color: detailSide === "front" ? theme.text : "rgba(255,255,255,0.8)" } }, "Front"), /* @__PURE__ */ React.createElement("button", { onClick: () => setDetailSide("back"), className: "px-3 py-1 font-medium", style: { background: detailSide === "back" ? theme.bg : "transparent", color: detailSide === "back" ? theme.text : "rgba(255,255,255,0.8)" } }, "Back"))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-center mt-2", style: { color: "rgba(255,255,255,0.55)" } }, (selectedCard.copies || []).length > 0 ? `${selectedCard.copies.length} cop${selectedCard.copies.length !== 1 ? "ies" : "y"} tracked.` : "Cards without a scan show a placeholder sleeve in the grid.")),
-      /* @__PURE__ */ React.createElement("div", { className: "p-5 flex-1 min-h-0 overflow-y-auto pc-scroll" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between mb-1 gap-2 pr-9" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-xl", style: { fontWeight: 600 } }, memberLabel(selectedCard) || selectedCard.group), badge && (isOwner && !peek ? /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "pc-detail-information p-5 flex-1 min-h-0 overflow-y-auto pc-scroll" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between mb-1 gap-2 pr-9" }, /* @__PURE__ */ React.createElement("h2", { className: "pc-font-display text-xl", style: { fontWeight: 600 } }, memberLabel(selectedCard) || selectedCard.group), badge && (isOwner && !peek ? /* @__PURE__ */ React.createElement(
         "button",
         {
           onClick: () => cycleStatus(selectedCard.id),
