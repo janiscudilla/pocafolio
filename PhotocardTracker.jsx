@@ -69,7 +69,7 @@ const DEFAULT_CHARACTER_SERIES = ['ANITEEZ', 'MIGHTEEZ', 'Birthday Characters'];
 
 // Bump number/date/note on EVERY build so the owner can tell at a glance which version is live and
 // what changed. Rendered in the footer for the signed-in owner only (visitors never see it).
-const BUILD_INFO = { number: 9, date: 'Nov 17, 2026', note: 'Saves are verified by reading back from Firebase; photo count shown here' };
+const BUILD_INFO = { number: 10, date: 'Nov 17, 2026', note: 'Each card now saves on its own (small, fast saves); leaving mid-save is warned' };
 
 // ==== 3-tier Release taxonomy: Release Category → Collection/Line → Release/Edition ====
 // Release Category is the new top-level field. Collection/Line's *options* are scoped by which
