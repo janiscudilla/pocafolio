@@ -69,7 +69,7 @@ const DEFAULT_CHARACTER_SERIES = ['ANITEEZ', 'MIGHTEEZ', 'Birthday Characters'];
 
 // Bump number/date/note on EVERY build so the owner can tell at a glance which version is live and
 // what changed. Rendered in the footer for the signed-in owner only (visitors never see it).
-const BUILD_INFO = { number: 8, date: 'Nov 17, 2026', note: 'Save errors now show the real reason (code + hint) instead of a generic message' };
+const BUILD_INFO = { number: 9, date: 'Nov 17, 2026', note: 'Saves are verified by reading back from Firebase; photo count shown here' };
 
 // ==== 3-tier Release taxonomy: Release Category → Collection/Line → Release/Edition ====
 // Release Category is the new top-level field. Collection/Line's *options* are scoped by which
@@ -3537,7 +3537,7 @@ export default function PhotocardTracker({ isOwner = true } = {}) {
         </p>
         {isOwner && (
           <p className="text-center text-[10px] mt-2" style={{ color: theme.muted, opacity: 0.75 }} title="Only you can see this">
-            Build {BUILD_INFO.number} · {BUILD_INFO.date} · {BUILD_INFO.note}
+            Build {BUILD_INFO.number} · {BUILD_INFO.date} · {BUILD_INFO.note} · {cards.reduce((n, c) => n + (c.frontImage ? 1 : 0) + (c.backImage ? 1 : 0), 0)} photos
           </p>
         )}
       </div>
